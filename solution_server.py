@@ -240,6 +240,8 @@ class ClientSender:
         self.slow_hold = SLOW_HOLD_SECONDS / 2
         self.slow_trips = 0
         self.late_pongs = 0
+        peer = getattr(ws, "remote_address", None)
+        self.label = f"{peer[0]}:{peer[1]}" if peer else hex(id(self))
 
     def _behind(self, now: float) -> bool:
         return (len(self.pending) > SOFT_PENDING_ITEMS
@@ -309,6 +311,9 @@ class ClientSender:
             if now >= self.slow_until:
                 self.slow_hold = min(self.slow_hold * 2, SLOW_HOLD_MAX_SECONDS)
                 self.slow_trips += 1
+                print(f"SLOW_MODE_ENTER client={self.label} "
+                      f"hold={self.slow_hold:.1f}s pong={latency * 1000:.0f}ms",
+                      flush=True)
             self.slow_until = now + self.slow_hold
         self.slow = now < self.slow_until
 
@@ -434,6 +439,11 @@ class LiveRecallServer:
                 task.result()
         finally:
             self.clients.discard(client)
+            if client.coalesced or client.slow_trips or client.resyncs:
+                print(f"CLIENT_STATS client={client.label} "
+                      f"coalesced={client.coalesced} "
+                      f"slow_trips={client.slow_trips} "
+                      f"resyncs={client.resyncs}", flush=True)
             client.closing = True
             client.ready.set()
             # Close first to unblock any in-flight send, then clean up tasks.
