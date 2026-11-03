@@ -59,6 +59,7 @@ Mac and container results are only sanity checks. Report numbers must come from 
 
 ## Change log
 
+- Gate 5 item 2 (VM, b1961d3): 10-minute run, 100 clients, 10% slow, 600 segments. RSS 32.3 MB at 1 min, 32.4 MB at the end (flat). Completeness 100%, 0 dup/stale, normal P95 19.9 ms and 100% fresh (all 162000 normal revisions received), slow P50 1.4 s / P95 9.0 s, 60 slow-mode entries, no resyncs.
 - Gate 5 item 1 (VM, b1961d3, tools/stress_reconnect.py): 100 clients x 60 segments. Random reconnects: 1111 connects, 2023 finals recovered, HISTORY P95 2.9 ms. Storm (all reconnect together every 4 s): 1500 connects, 900 recovered, HISTORY P95 16.1 ms. Both 100/100 clients complete, 0 duplicate, 0 stale, no coalescing or resyncs.
 - 23:30 Tue: VM T4 on 79c9720 passed (100%, 0 dup/stale). Added report_dump.md, raw material for the report.
 - 23:25 Tue: 79c9720 caps history requests at 60 s (were rejected over 60) and retains 70 s internally. 21 tests OK; local T4 100%, 0 dup/stale.
