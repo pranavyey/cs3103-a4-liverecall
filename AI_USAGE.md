@@ -1,6 +1,6 @@
 **LiveRecall AI and coding assistant usage**
 
-This is a working record, updated during development. I will review it against the final implementation and contribution statement before submission.
+[REVIEW BEFORE SUBMITTING]
 
 **Tools and work performed.** OpenAI Codex assisted with setting up Ubuntu backups, designing and implementing the server, generating independent tests, reviewing changes, recording evidence, and maintaining documentation. Separate Codex agents reviewed the implementation and wrote tests; these are AI-assisted checks, not independent human review. Anthropic Claude Code (from 3 November 2026) assisted with moving code to the Ubuntu VM, adding server diagnostic logging, interpreting VM test output, and maintaining this record and EXECUTION_STATUS.md. The public source generator, load clients, measurement logic, and networking profiles remain unchanged.
 
