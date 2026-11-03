@@ -2,9 +2,9 @@
 
 Live tracker that sits next to EXECUTION_PLAN.md. Any agent or session picking up the work reads this first and updates it at each gate: what passed, the commit, open defects, and the next task. Times are Singapore time.
 
-**Last updated:** Tue 3 Nov 2026, 23:10, by Claude (chat session with Pranav)
+**Last updated:** Tue 3 Nov 2026, 23:33, by Claude (chat session with Pranav)
 **Branch:** work/implementation, tracking origin/work/implementation. main is not advanced yet.
-**Current plan block:** Tue 20:30 to 22:30 (bounded sending, slow-client isolation). About 2.5 h ahead of schedule.
+**Current plan block:** Tue 22:30 to Wed 00:30 (Gate 5: stress, recovery, bandwidth, long runs). Gate 4 finished about 23:15, roughly 45 min past its block; Gate 5 is partly done.
 
 ## Gates
 
@@ -59,8 +59,8 @@ Mac and container results are only sanity checks. Report numbers must come from 
 
 ## Change log
 
-- 23:55 Tue: VM T4 on 79c9720 passed (100%, 0 dup/stale). Added report_dump.md, raw material for the report.
-- 23:40 Tue: 79c9720 caps history requests at 60 s (were rejected over 60) and retains 70 s internally. 21 tests OK; local T4 100%, 0 dup/stale.
+- 23:30 Tue: VM T4 on 79c9720 passed (100%, 0 dup/stale). Added report_dump.md, raw material for the report.
+- 23:25 Tue: 79c9720 caps history requests at 60 s (were rejected over 60) and retains 70 s internally. 21 tests OK; local T4 100%, 0 dup/stale.
 - 23:10 Tue: cutoff measured on the VM: the source takes about 70 s for 76 segments even with 1 client on an idle VM, so it is the VM's pacing, not server load.
 - 21:30 Tue: 405da57 measures the late streak only up to the latest late pong (fixes fast pongs extending it). VM: T3 slow readers all caught; T5 one genuine 4 s trip; 2 Mbit 100% once the run isn't cut off. Found the VM capture cutoff behind the 88 to 91% T3 numbers.
 - 20:45 Tue: slow-mode streak now starts when the late ping was sent and needs 3 s of lateness (2c0f320 first attempt, which broke T3; d3142fa fix). VM T5: 1/100 false trips (was 19), finals 100%, coverage 99.66%.
