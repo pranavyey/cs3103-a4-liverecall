@@ -43,6 +43,7 @@ Mac and container results are only sanity checks. Report numbers must come from 
 
 ## Open items and known limits
 
+- **Course clarification (bounded history, graceful overload):** checked against the server. Client history requests are now capped at 60 s instead of rejected over 60, and finals are retained for 70 s (79c9720). Per-client pending state stays bounded (256 items / 2 MiB); finals are never dropped for provisionals. VM test run for 79c9720 still to do.
 - **VM capture cutoff (environment limit, not the server):** on the VM the source takes about 70 s for 76 segments (0.92 s each, not the 0.75 s run_demo.py budgets), with **1 client and an idle VM** as well as with 100 clients. Results are written at 60.4 s, so the last 12 segments are never captured (1 client: 84.21%). Server load is not the cause. A 0.2 s asyncio.sleep measured 0.217 to 0.275 s on the VM (5 tries, about 50 ms over on average, though each try includes event-loop start-up); three waits per segment at that overshoot give about 0.9 s per segment, matching the observed 0.92 s. Measured inside one event loop (20 waits): 0.2517 s per 0.2 s wait, so 51.7 ms over and 0.905 s per segment. Report it with this evidence; use --source-segments supplemental runs for completeness claims, as the baseline did; do not change the harness. Ask course staff whether grading uses a machine where the source keeps 0.75 s pacing.
 - **T5 on the Ubuntu VM:** one run done (finals 100%, 0 dup/stale). Still to confirm, using SLOW_MODE_ENTER and CLIENT_STATS log lines, that normal clients don't trip slow mode under delay_loss.sh, which is what the 2-late-pong rule is for. Also try bandwidth_2mbit.sh.
 - **Slow-reader lag floor:** the load client buffers 16 messages, so a 500 ms reader is invisible until about 8 s behind. Short runs can't drain that backlog. This is accepted and explained in DESIGN_NOTES Gate 4. Do not send live finals as HISTORY to dodge the harness's slow-reader sleep; that would game the measurement.
@@ -58,6 +59,7 @@ Mac and container results are only sanity checks. Report numbers must come from 
 
 ## Change log
 
+- 23:40 Tue: 79c9720 caps history requests at 60 s (were rejected over 60) and retains 70 s internally. 21 tests OK; local T4 100%, 0 dup/stale.
 - 23:10 Tue: cutoff measured on the VM: the source takes about 70 s for 76 segments even with 1 client on an idle VM, so it is the VM's pacing, not server load.
 - 21:30 Tue: 405da57 measures the late streak only up to the latest late pong (fixes fast pongs extending it). VM: T3 slow readers all caught; T5 one genuine 4 s trip; 2 Mbit 100% once the run isn't cut off. Found the VM capture cutoff behind the 88 to 91% T3 numbers.
 - 20:45 Tue: slow-mode streak now starts when the late ping was sent and needs 3 s of lateness (2c0f320 first attempt, which broke T3; d3142fa fix). VM T5: 1/100 false trips (was 19), finals 100%, coverage 99.66%.
