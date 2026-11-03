@@ -2,7 +2,7 @@
 
 Live tracker that sits next to EXECUTION_PLAN.md. Any agent or session picking up the work reads this first and updates it at each gate: what passed, the commit, open defects, and the next task. Times are Singapore time.
 
-**Last updated:** Tue 3 Nov 2026, 19:40, by Claude (chat session with Pranav)
+**Last updated:** Tue 3 Nov 2026, 20:05, by Claude (chat session with Pranav)
 **Branch:** work/implementation, tracking origin/work/implementation. main is not advanced yet.
 **Current plan block:** Tue 20:30 to 22:30 (bounded sending, slow-client isolation). About 2.5 h ahead of schedule.
 
@@ -31,6 +31,7 @@ Student explanations recorded in DESIGN_NOTES.md: Gates 2, 3 and 4 done.
 | T3 100 clients, 10% slow 500 ms | Cloud dev container | 99.7 to 99.8% | 14 to 15 ms | 5.6 to 5.7 s | 0/0 | Starter: 82.9%, slow P95 24.8 s |
 | T4 100 clients, 20% disconnect | Cloud dev container | 100% | 15.6 ms | | 0/0 | 120 recovered items, recovery P95 7.4 ms |
 | 20 clients, 30% slow, 20 s | Mac | 87.7% | 4.9 ms | 4.7 s | 0/0 | Short run: slow clients' last finals arrive after capture ends |
+| T5 run 2, same profile | Ubuntu VM, e6fceec | 99.98% (4899/4900) | 802 ms | | 0/0 | **19/100 normal clients entered slow mode** (pongs 1.0 to 1.4 s, one 2.2 s); update coverage 95.50%. The two-late-pong rule is not enough |
 | T5 delay_loss.sh (120±30 ms, 3% loss), 100 clients 40 s | Ubuntu VM, bb50641 | 100% (4900/4900) | 741 ms (P50 263, P99 1087) | | 0/0 | Fresh ratio 86.4%; normal update coverage 97.71%. Cause of the 2.3% missing provisionals (coalescing vs slow mode) not yet known; rerun with the new logging |
 
 Mac and container results are only sanity checks. Report numbers must come from the Ubuntu VM (liverecall-a4) on a tagged commit.
@@ -44,12 +45,13 @@ Mac and container results are only sanity checks. Report numbers must come from 
 
 ## Next tasks
 
-1. On the VM: rerun T5 with the logging commit; `grep -c SLOW_MODE_ENTER` should be 0 for normal clients. Then try bandwidth_2mbit.sh. Reset lo afterwards.
+1. Retune the slow-mode trigger so lossy normal clients don't trip it (student to choose; see options in chat/DESIGN_NOTES), then check T3 is still OK and rerun T5 until SLOW_MODE_ENTER is 0. Then try bandwidth_2mbit.sh. Reset lo afterwards.
 2. Gate 5 stress checks: bursts, repeated reconnects, longer runs, bandwidth profile.
 3. Tag a pre-sleep checkpoint, then the official three-run T1 to T5 set on Ubuntu.
 
 ## Change log
 
+- 20:05 Tue: T5 run 2 with logging (e6fceec): 19/100 normal clients wrongly entered slow mode; finals 99.98%, 0 dup/stale. Trigger needs retuning. Added AI_USAGE entries for the slow-mode trigger and the rejected finals-as-HISTORY shortcut.
 - 19:40 Tue: first T5 run on the VM (bb50641): finals 100%, 0 dup/stale, P95 741 ms, update coverage 97.71%. Added SLOW_MODE_ENTER and per-client CLIENT_STATS (coalesced, slow_trips, resyncs) server logs to explain the missing provisionals. The "opening handshake failed" tracebacks come from run_demo.py's TCP readiness probe and are harmless.
 - 18:20 Tue: slow mode now needs 2 consecutive late pongs, so a single TCP retransmission on a lossy link can't push a normal client into finals-only mode. 19 tests OK; T3 unchanged (99.7 to 99.8%). Benefit in T5 not yet measured.
 - 18:15 Tue: moved the Mac-local result files into experiments/mac-local/.
