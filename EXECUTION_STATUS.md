@@ -2,7 +2,7 @@
 
 Live tracker that sits next to EXECUTION_PLAN.md. Any agent or session picking up the work reads this first and updates it at each gate: what passed, the commit, open defects, and the next task. Times are Singapore time.
 
-**Last updated:** Tue 3 Nov 2026, 21:30, by Claude (chat session with Pranav)
+**Last updated:** Tue 3 Nov 2026, 23:10, by Claude (chat session with Pranav)
 **Branch:** work/implementation, tracking origin/work/implementation. main is not advanced yet.
 **Current plan block:** Tue 20:30 to 22:30 (bounded sending, slow-client isolation). About 2.5 h ahead of schedule.
 
@@ -43,7 +43,7 @@ Mac and container results are only sanity checks. Report numbers must come from 
 
 ## Open items and known limits
 
-- **VM capture cutoff (high priority, affects the correctness gate):** on the VM, prescribed T3 and the 2 Mbit run write results before SOURCE_DONE, so every client misses the last segments (T3 88 to 90% for both the new and old rule; the starter's T1 was 95.45% for the same reason). run_demo.py budgets 0.75 s per segment with a 2 s tail; the source overshoots that on the 2-CPU VM. With fewer segments the 2 Mbit run is 100%. Investigate in Gate 5: measure the source's actual pacing on the VM, and whether server CPU (pings every 2 messages for 100 clients) slows the source. Do not change the public harness.
+- **VM capture cutoff (environment limit, not the server):** on the VM the source takes about 70 s for 76 segments (0.92 s each, not the 0.75 s run_demo.py budgets), with **1 client and an idle VM** as well as with 100 clients. Results are written at 60.4 s, so the last 12 segments are never captured (1 client: 84.21%). Server load is not the cause. Report it with this evidence; use --source-segments supplemental runs for completeness claims, as the baseline did; do not change the harness. Ask course staff whether grading uses a machine where the source keeps 0.75 s pacing.
 - **T5 on the Ubuntu VM:** one run done (finals 100%, 0 dup/stale). Still to confirm, using SLOW_MODE_ENTER and CLIENT_STATS log lines, that normal clients don't trip slow mode under delay_loss.sh, which is what the 2-late-pong rule is for. Also try bandwidth_2mbit.sh.
 - **Slow-reader lag floor:** the load client buffers 16 messages, so a 500 ms reader is invisible until about 8 s behind. Short runs can't drain that backlog. This is accepted and explained in DESIGN_NOTES Gate 4. Do not send live finals as HISTORY to dodge the harness's slow-reader sleep; that would game the measurement.
 - **Before/after comparison:** use experiments/baseline/ (starter, same T3/T4 parameters) as the before side.
@@ -52,12 +52,13 @@ Mac and container results are only sanity checks. Report numbers must come from 
 ## Next tasks
 
 1. Slow-mode rule final for now (405da57); VM T3/T5 checked. Record the student's Gate 4 explanation in DESIGN_NOTES and finish the AI_USAGE entries.
-2. Investigate the VM capture cutoff (see open items) before the official runs.
+2. Capture cutoff explained (VM timer overshoot, see open items). Plan the official runs to state it and add --source-segments supplemental runs.
 3. Gate 5 stress checks: bursts, repeated reconnects, longer runs, bandwidth profile.
 4. Tag a pre-sleep checkpoint, then the official three-run T1 to T5 set on Ubuntu.
 
 ## Change log
 
+- 23:10 Tue: cutoff measured on the VM: the source takes about 70 s for 76 segments even with 1 client on an idle VM, so it is the VM's pacing, not server load.
 - 21:30 Tue: 405da57 measures the late streak only up to the latest late pong (fixes fast pongs extending it). VM: T3 slow readers all caught; T5 one genuine 4 s trip; 2 Mbit 100% once the run isn't cut off. Found the VM capture cutoff behind the 88 to 91% T3 numbers.
 - 20:45 Tue: slow-mode streak now starts when the late ping was sent and needs 3 s of lateness (2c0f320 first attempt, which broke T3; d3142fa fix). VM T5: 1/100 false trips (was 19), finals 100%, coverage 99.66%.
 - 20:05 Tue: T5 run 2 with logging (e6fceec): 19/100 normal clients wrongly entered slow mode; finals 99.98%, 0 dup/stale. Trigger needs retuning. Added AI_USAGE entries for the slow-mode trigger and the rejected finals-as-HISTORY shortcut.
