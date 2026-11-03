@@ -3,9 +3,10 @@
 
 Run: python solution_server.py --port 8765
 
-The source and public measurement tools are unchanged. This correctness
-checkpoint uses a bounded FIFO per client. A queue overflow closes that client
-so it can resume from retained history; semantic coalescing is a later phase.
+The source and public measurement tools are unchanged. Each client has a
+bounded, per-segment pending map: obsolete provisional revisions are replaced
+in place when a client falls behind, finals are never dropped, and a client
+that exceeds the bound is resynchronised from shared history.
 """
 
 from __future__ import annotations
@@ -30,6 +31,14 @@ MAX_ACTIVE_ITEMS = 128
 MAX_ACTIVE_BYTES = 4 * 1024 * 1024
 MAX_PENDING_ITEMS = 256
 MAX_PENDING_BYTES = 2 * 1024 * 1024
+SOFT_PENDING_ITEMS = 32
+SOFT_PENDING_BYTES = 256 * 1024
+COALESCE_AFTER_SECONDS = 0.5
+PING_EVERY = 2
+MAX_UNANSWERED_PINGS = 2
+SLOW_PONG_SECONDS = 1.0
+SLOW_HOLD_SECONDS = 15.0
+SLOW_HOLD_MAX_SECONDS = 120.0
 MAX_MESSAGE_BYTES = 1024 * 1024
 HISTORY_PREFIX = '{"type":"HISTORY","items":['
 HISTORY_SUFFIX = ']}'
@@ -198,56 +207,151 @@ def history_frames(items: tuple[Caption, ...]):
 
 
 class ClientSender:
-    def __init__(self, ws: Any, history: tuple[Caption, ...],
-                 active: tuple[Caption, ...]):
+    """One task per client; slow clients only ever cost bounded memory.
+
+    Normally pending work is a plain FIFO, so every revision is delivered.
+    When the client is actually behind (oldest item has waited too long, or
+    the queue passes a soft limit), the queue is compacted: provisional
+    revisions superseded by a newer queued revision of the same segment are
+    dropped, while finals and the newest revision of each segment stay in
+    order. If the hard bound is still exceeded, the client is resynchronised
+    from shared history using the last final it was sent.
+    """
+
+    def __init__(self, ws: Any, state: SessionState,
+                 history: tuple[Caption, ...], active: tuple[Caption, ...]):
         self.ws = ws
+        self.state = state
         self.history = history
         self.active = active
-        self.pending: deque[Caption] = deque()
+        self.pending: deque[tuple[float, Caption]] = deque()
         self.pending_bytes = 0
         self.ready = asyncio.Event()
         self.closing = False
-        self.close_task: asyncio.Task | None = None
+        self.resync = False
+        self.cursor = (0, 0)          # last final (segment, revision) sent
+        self.coalesced = 0
+        self.resyncs = 0
+        self.pongs: deque[Any] = deque()
+        self.unpinged = 0
+        self.slow = False
+        self.slow_until = 0.0
+        self.slow_hold = SLOW_HOLD_SECONDS / 2
+        self.slow_trips = 0
+
+    def _behind(self, now: float) -> bool:
+        return (len(self.pending) > SOFT_PENDING_ITEMS
+                or self.pending_bytes > SOFT_PENDING_BYTES
+                or now - self.pending[0][0] > COALESCE_AFTER_SECONDS)
+
+    def _compact(self) -> None:
+        newest: dict[int, int] = {}
+        for _, item in self.pending:
+            newest[item.segment] = max(newest.get(item.segment, 0), item.revision)
+        kept: deque[tuple[float, Caption]] = deque()
+        size = 0
+        for entry in self.pending:
+            item = entry[1]
+            if item.final or item.revision == newest[item.segment]:
+                kept.append(entry)
+                size += item.size
+        self.coalesced += len(self.pending) - len(kept)
+        self.pending, self.pending_bytes = kept, size
 
     def enqueue(self, caption: Caption) -> bool:
         if self.closing:
             return False
-        if (len(self.pending) >= MAX_PENDING_ITEMS
-                or self.pending_bytes + caption.size > MAX_PENDING_BYTES):
-            self.closing = True
+        if self.resync:
+            return True               # the coming snapshot already covers it
+        now = time.monotonic()
+        self.pending.append((now, caption))
+        self.pending_bytes += caption.size
+        if self._behind(now):
+            self._compact()
+        if (len(self.pending) > MAX_PENDING_ITEMS
+                or self.pending_bytes > MAX_PENDING_BYTES):
+            self.resync = True
+            self.resyncs += 1
             self.pending.clear()
             self.pending_bytes = 0
-            self.ready.set()
-            # At most one close task per client. The reconnect cursor and
-            # shared final history make this explicit interim policy recoverable.
-            self.close_task = asyncio.create_task(self.ws.close(
-                code=1013, reason="Pending limit reached; reconnect to recover"))
-            return False
-        self.pending.append(caption)
-        self.pending_bytes += caption.size
         self.ready.set()
         return True
 
-    async def send(self) -> None:
+    async def _send(self, caption: Caption) -> None:
+        # Send window: TCP buffers can hold hundreds of captions, hiding a slow
+        # reader. A ping every PING_EVERY messages is answered only once the
+        # client has read everything before it, so waiting for old pongs keeps
+        # the backlog here, where obsolete revisions can still be dropped.
+        while len(self.pongs) >= MAX_UNANSWERED_PINGS:
+            await self._await_pong()
+        await self.ws.send(caption.wire)
+        self.unpinged += 1
+        if self.unpinged >= PING_EVERY:
+            self.unpinged = 0
+            self.pongs.append(await self.ws.ping())
+        if caption.final and (caption.segment, caption.revision) > self.cursor:
+            self.cursor = (caption.segment, caption.revision)
+
+    async def _await_pong(self) -> None:
+        latency = await self.pongs.popleft()
+        # A late pong means the client stopped reading: its receive buffer is
+        # full. A fast pong does not prove it caught up (the client library
+        # reads again as soon as its queue has room), so slow mode is sticky:
+        # finals only for a hold time that doubles on each repeat, letting the
+        # client's buffered backlog drain before provisionals resume.
+        now = time.monotonic()
+        if latency > SLOW_PONG_SECONDS:
+            if now >= self.slow_until:
+                self.slow_hold = min(self.slow_hold * 2, SLOW_HOLD_MAX_SECONDS)
+                self.slow_trips += 1
+            self.slow_until = now + self.slow_hold
+        self.slow = now < self.slow_until
+
+    async def _send_snapshot(self) -> None:
         for frame in history_frames(self.history):
             if self.closing:
                 return
             await self.ws.send(frame)
+        for item in self.history:
+            self.cursor = max(self.cursor, (item.segment, item.revision))
         self.history = ()
-        for caption in self.active:
+        active, self.active = self.active, ()
+        for caption in active:
             if self.closing:
                 return
-            await self.ws.send(caption.wire)
-        self.active = ()
+            await self._send(caption)
+
+    async def send(self) -> None:
+        await self._send_snapshot()
         sent = 0
         while not self.closing:
+            if self.resync:
+                # No await between clearing the flag and taking the snapshot,
+                # so nothing can fall between the snapshot and new live work.
+                self.resync = False
+                self.history, self.active = self.state.snapshot(
+                    self.cursor, HISTORY_SECONDS)
+                await self._send_snapshot()
+                continue
             if not self.pending:
                 self.ready.clear()
                 await self.ready.wait()
                 continue
-            caption = self.pending.popleft()
+            caption = self.pending[0][1]
+            if self.slow and time.monotonic() >= self.slow_until:
+                self.slow = False
+            if not caption.final and self.slow:
+                # Slow client: send finals only until its buffered backlog has
+                # drained (pongs come back quickly again). The provisional stays
+                # queued as the newest state and may be superseded meanwhile.
+                if not self.pongs:
+                    self.pongs.append(await self.ws.ping())
+                await self._await_pong()
+                self._compact()
+                continue
+            self.pending.popleft()
             self.pending_bytes -= caption.size
-            await self.ws.send(caption.wire)
+            await self._send(caption)
             sent += 1
             if sent % 64 == 0:
                 await asyncio.sleep(0)
@@ -309,7 +413,7 @@ class LiveRecallServer:
         # No await between snapshot and registration: a source event is either
         # in this immutable snapshot or queued as live work, never lost between.
         history, active = state.snapshot((segment, revision), float(seconds))
-        client = ClientSender(ws, history, active)
+        client = ClientSender(ws, state, history, active)
         self.clients.add(client)
 
         async def receive_until_closed():
@@ -333,8 +437,6 @@ class LiveRecallServer:
                 if not task.done():
                     task.cancel()
             await asyncio.gather(sender, receiver, return_exceptions=True)
-            if client.close_task is not None:
-                await asyncio.gather(client.close_task, return_exceptions=True)
 
     async def handler(self, ws: Any) -> None:
         try:
