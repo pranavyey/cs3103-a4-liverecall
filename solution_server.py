@@ -37,6 +37,7 @@ COALESCE_AFTER_SECONDS = 0.5
 PING_EVERY = 2
 MAX_UNANSWERED_PINGS = 2
 SLOW_PONG_SECONDS = 1.0
+SLOW_LATE_PONGS = 2
 SLOW_HOLD_SECONDS = 15.0
 SLOW_HOLD_MAX_SECONDS = 120.0
 MAX_MESSAGE_BYTES = 1024 * 1024
@@ -238,6 +239,7 @@ class ClientSender:
         self.slow_until = 0.0
         self.slow_hold = SLOW_HOLD_SECONDS / 2
         self.slow_trips = 0
+        self.late_pongs = 0
 
     def _behind(self, now: float) -> bool:
         return (len(self.pending) > SOFT_PENDING_ITEMS
@@ -300,7 +302,10 @@ class ClientSender:
         # finals only for a hold time that doubles on each repeat, letting the
         # client's buffered backlog drain before provisionals resume.
         now = time.monotonic()
-        if latency > SLOW_PONG_SECONDS:
+        # Two late pongs in a row are needed: one late pong can be a single
+        # TCP retransmission on a lossy link, not a slow reader.
+        self.late_pongs = self.late_pongs + 1 if latency > SLOW_PONG_SECONDS else 0
+        if self.late_pongs >= SLOW_LATE_PONGS:
             if now >= self.slow_until:
                 self.slow_hold = min(self.slow_hold * 2, SLOW_HOLD_MAX_SECONDS)
                 self.slow_trips += 1
