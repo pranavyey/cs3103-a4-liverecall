@@ -306,15 +306,16 @@ class ClientSender:
         # finals only for a hold time that doubles on each repeat, letting the
         # client's buffered backlog drain before provisionals resume.
         now = time.monotonic()
-        # Slow means the client has been unresponsive for SLOW_LATE_SECONDS.
-        # A pong with latency L shows the client stopped reading at least L
-        # seconds ago (when the ping was sent), so a streak starts at
-        # now - L, not when the pong arrived. A slow reader answers rarely
-        # but very late (about 5 s), so one pong is enough. A lossy link
-        # gives late pongs of 1 to 2 s that clear quickly. A fast pong right
-        # behind a late one is normal for slow readers (each read frees room
-        # for one more frame), so only SLOW_LATE_GAP_SECONDS with no late
-        # pong ends a streak.
+        # Slow means late pongs prove the client went SLOW_LATE_SECONDS
+        # without reading. A pong with latency L shows the client stopped
+        # reading at least L seconds before it arrived, so a streak starts at
+        # now - L and is measured only up to the latest late pong: time that
+        # passes after it proves nothing, as fast pongs show reading again.
+        # A slow reader goes silent for about 5 s once its buffers fill, then
+        # answers late (often two pongs at once), so one pong is enough. A
+        # lossy link gives late pongs of 1 to 2 s that don't add up to 3 s.
+        # Fast pongs neither start nor end a streak; only
+        # SLOW_LATE_GAP_SECONDS with no late pong ends it.
         if latency > SLOW_PONG_SECONDS:
             if now - self.last_late > SLOW_LATE_GAP_SECONDS:
                 self.late_since = now - latency
@@ -322,12 +323,13 @@ class ClientSender:
                 self.late_since = min(self.late_since, now - latency)
             self.last_late = now
         if (now - self.last_late <= SLOW_LATE_GAP_SECONDS
-                and now - self.late_since >= SLOW_LATE_SECONDS):
+                and self.last_late - self.late_since >= SLOW_LATE_SECONDS):
             if now >= self.slow_until:
                 self.slow_hold = min(self.slow_hold * 2, SLOW_HOLD_MAX_SECONDS)
                 self.slow_trips += 1
                 print(f"SLOW_MODE_ENTER client={self.label} "
-                      f"hold={self.slow_hold:.1f}s pong={latency * 1000:.0f}ms",
+                      f"hold={self.slow_hold:.1f}s pong={latency * 1000:.0f}ms "
+                      f"late_for={self.last_late - self.late_since:.1f}s",
                       flush=True)
             self.slow_until = now + self.slow_hold
         self.slow = now < self.slow_until
