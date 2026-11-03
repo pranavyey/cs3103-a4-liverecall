@@ -1,0 +1,132 @@
+LiveRecall server-core validation: exact committed revision
+Collected 3 November 2026 (Singapore time).
+
+REVISION AND ENVIRONMENT
+Commit: 36ed41093b1f8aed864fe8852f975c689663da3c
+Git archive SHA-256: e3c188a0463fefeaa09683b48b7a49dd170985a48a0d4d60fe2b6bb76789c796
+Isolated guest source: /home/ubuntu/liverecall-core
+Guest evidence: /home/ubuntu/liverecall-core-evidence
+Original baseline source /home/ubuntu/liverecall was not changed.
+VM: liverecall-a4; Ubuntu 24.04.5 LTS ARM64; 2 CPUs, 4 GB RAM, 15 GB disk.
+Reused interpreter: /home/ubuntu/liverecall/.venv/bin/python
+Python 3.12.3; websockets 16.1.1; loopback noqueue (no impairment).
+Existing mininet-lab VM and other host activity were not changed or controlled.
+Source/test hashes are recorded in environment-and-hashes.txt.
+Guest hashes match the exact Git commit; see committed-file-hash-verification.txt.
+SHA-256 verification confirms load_clients.py, analyse_results.py, run_demo.py,
+caption_source.py and requirements.txt match the original baseline exactly.
+
+COMPLETION CHECKS
+19 unit tests passed on Ubuntu; see unit-tests.txt.
+submission_check.py passed startup/WebSocket compatibility.
+Four requested one-run experiments completed; these are completion checks,
+not the final report's three independent runs per prescribed test.
+
+EXACT COMMANDS (working directory /home/ubuntu/liverecall-core)
+/home/ubuntu/liverecall/.venv/bin/python -B -m unittest discover -s tests -p 'test_server*.py' -v
+/home/ubuntu/liverecall/.venv/bin/python -B submission_check.py
+/home/ubuntu/liverecall/.venv/bin/python -B -u run_demo.py --clients 20 --duration 20 --runs 1 --output-stem /home/ubuntu/liverecall-core-evidence/t1 --quiet-server
+/home/ubuntu/liverecall/.venv/bin/python -B -u run_demo.py --clients 100 --duration 60 --runs 1 --disconnect-percent 20 --disconnect-at 15 --disconnect-seconds 5 --output-stem /home/ubuntu/liverecall-core-evidence/t4 --quiet-server
+/home/ubuntu/liverecall/.venv/bin/python -B -u run_demo.py --clients 20 --duration 20 --runs 1 --source-segments 16 --output-stem /home/ubuntu/liverecall-core-evidence/supplemental_t1_headroom --quiet-server
+/home/ubuntu/liverecall/.venv/bin/python -B -u run_demo.py --clients 100 --duration 60 --runs 1 --source-segments 55 --disconnect-percent 20 --disconnect-at 15 --disconnect-seconds 5 --output-stem /home/ubuntu/liverecall-core-evidence/supplemental_t4_headroom --quiet-server
+
+All other public defaults were unchanged: seed 3103, port 8765, history 30 s,
+source start delay 1 s, freshness threshold 500 ms. Prescribed T1 requests
+22 segments; prescribed T4 requests 76. Supplemental checks match the
+earlier baseline workloads (16 and 55 segments respectively) exactly.
+
+RESULTS
+
+t1
+  P50 caption age: 4.34 ms
+  P95 caption age: 6.72 ms
+  P99 caption age: 8.07 ms
+  Fresh Caption Ratio: 100.00 %
+  Fresh Final Caption Ratio: 95.45 %
+  Final completeness: 95.45 %
+  Normal Update Coverage (supplied metric): 98.48 %
+  duplicates: 0
+  stale: 0
+  invalid_history_nonfinal: 0
+  connection_errors: 0
+  recovered_history_items: 0
+  Finals per client, by disconnecting role: {'0': {'clients': 20, 'final_counts': [21]}}
+
+t4
+  P50 caption age: 10.57 ms
+  P95 caption age: 16.76 ms
+  P99 caption age: 19.26 ms
+  Fresh Caption Ratio: 100.00 %
+  Fresh Final Caption Ratio: 86.84 %
+  Final completeness: 88.16 %
+  Normal Update Coverage (supplied metric): 86.67 %
+  Recovery P95: 4.14 ms
+  duplicates: 0
+  stale: 0
+  invalid_history_nonfinal: 0
+  connection_errors: 0
+  recovered_history_items: 120
+  Finals per client, by disconnecting role: {'0': {'clients': 80, 'final_counts': [67]}, '1': {'clients': 20, 'final_counts': [67]}}
+
+supplemental_t1_headroom
+  P50 caption age: 4.48 ms
+  P95 caption age: 6.85 ms
+  P99 caption age: 7.70 ms
+  Fresh Caption Ratio: 100.00 %
+  Fresh Final Caption Ratio: 100.00 %
+  Final completeness: 100.00 %
+  Normal Update Coverage (supplied metric): 100.00 %
+  duplicates: 0
+  stale: 0
+  invalid_history_nonfinal: 0
+  connection_errors: 0
+  recovered_history_items: 0
+  Finals per client, by disconnecting role: {'0': {'clients': 20, 'final_counts': [16]}}
+
+supplemental_t4_headroom
+  P50 caption age: 9.98 ms
+  P95 caption age: 15.95 ms
+  P99 caption age: 26.38 ms
+  Fresh Caption Ratio: 100.00 %
+  Fresh Final Caption Ratio: 98.18 %
+  Final completeness: 100.00 %
+  Normal Update Coverage (supplied metric): 98.18 %
+  Recovery P95: 4.40 ms
+  duplicates: 0
+  stale: 0
+  invalid_history_nonfinal: 0
+  connection_errors: 0
+  recovered_history_items: 100
+  Finals per client, by disconnecting role: {'0': {'clients': 80, 'final_counts': [55]}, '1': {'clients': 20, 'final_counts': [55]}}
+
+MATCHED SUPPLEMENTAL BEFORE/AFTER
+supplemental_t1_headroom
+  Final completeness: 100.00% -> 100.00%
+  Recovered history items: 0 -> 0
+  Baseline finals per client: {'0': {'clients': 20, 'final_counts': [16]}}
+  Core finals per client: {'0': {'clients': 20, 'final_counts': [16]}}
+supplemental_t4_headroom
+  Final completeness: 97.82% -> 100.00%
+  Recovered history items: 0 -> 100
+  Baseline finals per client: {'0': {'clients': 80, 'final_counts': [55]}, '1': {'clients': 20, 'final_counts': [49]}}
+  Core finals per client: {'0': {'clients': 80, 'final_counts': [55]}, '1': {'clients': 20, 'final_counts': [55]}}
+
+INTERPRETATION AND LIMITS
+The prescribed baseline had source/capture timing cutoff on this VM: the
+source ran slower than the public runner's nominal cadence, so some final
+captions were generated after clients stopped capturing. Preserve prescribed
+results and distinguish this from recovery correctness. Supplemental source
+limits use supported CLI options to give headroom without altering public
+measurement code. A one-run timing difference is not a reliable performance
+claim; no median improvement is claimed from these core validation runs.
+The number of captions emitted during a timed disconnect can differ between
+runs as source scheduling varies. The matched supplemental baseline missed
+six finals per reconnecting client; this core run recovered five per client
+and ended with every client holding all 55 finals.
+HISTORY response time alone does not prove recovery; use recovered final
+counts, completeness and duplicate/stale checks together.
+This phase does not validate T2, T3, T5, constrained-bandwidth behavior,
+the browser, final three-run experiment sets, or the finished submission.
+
+ZIP contains exact commit provenance, environment/source/test hashes,
+all raw CSV/JSON results, unit/compatibility logs, console logs and this summary.

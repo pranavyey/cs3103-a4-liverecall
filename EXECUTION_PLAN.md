@@ -6,29 +6,32 @@ Plan for one available student, assisted by Codex. The 14:30-to-20:00 schedule p
 
 The mandatory scope is a correct, usable deterministic-caption application, reproducible Ubuntu experiments, the report, the video, and submission documentation. Exclude optional ASR from this deadline plan. The assignment permits AI assistance, but the student must understand and defend the implementation.
 
-**The execution sequence is as follows.** Each block ends with an observable result. If a gate fails, use its remaining time to fix the failure before adding optional improvements.
+**The execution sequence is as follows.** Each block ends with an observable result and a 10-minute explanation by the student. Reserve those 10 minutes inside each block. Trace the code path, explain the state and bounds, and describe one failure case without reading a prepared answer. Record understanding as pending until the student has actually done this. If a gate fails, use its remaining time to fix the failure before adding optional improvements.
 
 | Singapore time | Work | Completion check |
 |---|---|---|
 | Tue 3 Nov, 14:30–15:30 | Finish Ubuntu setup, preserve the starter, establish Git/GitHub, run baseline checks, agree protocol invariants. | Server starts on Ubuntu; network impairment can be applied and reset; starter is recoverable; baseline logs are saved or running. |
 | Tue, 15:30–18:30 | Implement server revision state, final-caption history, late join, and incremental recovery. | Older revisions cannot replace newer state; final history is ordered and excludes acknowledged finals; focused correctness checks and T1 pass. |
 | Tue, 18:30–20:30 | Complete and integrate the browser client. | Two clients show revisions in place; provisional/final states differ visually; local recall defaults to 30 seconds with 15/30/60 choices; reconnect and late join work without duplicate finals. |
-| Tue, 20:30–22:30 | Implement bounded sending and slow-client isolation; capture a comparable pre-optimization stress baseline before changing the policy. | Per-client pending work and retained state have explicit bounds; finals and newest active state survive overload; normal clients keep receiving revisions. |
+| Tue, 20:30–22:30 | Implement bounded sending and slow-client isolation; compare against matching evidence from the preserved starter. | Per-client pending work and retained state have explicit bounds; finals and newest active state survive overload; normal clients keep receiving revisions. If a matching baseline is missing, measure an isolated export of starter-baseline. |
 | Tue 22:30–Wed 00:30 | Exercise recovery, slow readers, constrained bandwidth, bursts, and longer runs; fix integration defects. | No stale or duplicate finals; normal clients remain responsive; clients catch up promptly after impairment ends; memory/pending state remains bounded. |
-| Wed, 00:30–03:00 | Run the required experiment set, save results and comparison evidence, draft report structure and demo script. | Working version committed and pushed; outstanding defects listed; T5 has been exercised; first results and reproducible commands saved. |
+| Wed, 00:30–03:00 | Choose and commit a stable candidate, then run the full T1–T5 set with three independent runs each before sleep. Assemble the accumulated design notes into a report draft and prepare the demo script. | Exact tested commit and commands recorded; full run outputs saved if stable; before/after evidence uses matching parameters; working checkpoint pushed. If unstable, record the failed gate and unfinished runs explicitly. |
 | Wed, 03:00–09:00 | Sleep. | No work or approval is required from the student during this window. |
-| Wed, 09:00–11:00 | Resolve remaining defects and finish final measurements on the chosen revision. | T1–T5 each have three independent runs and median results; before/after comparison is valid; affected checks rerun after any fix. Freeze feature work. |
-| Wed, 11:00–14:00 | Finish the 4–5 page report and required documentation. | Report includes real results, architecture, protocol, recovery, overload behavior, trade-offs, limitations, and future work; README, AI usage, and contributions are accurate. |
+| Wed, 09:00–11:00 | Review the pre-sleep results, resolve any necessary defects, and rerun measurements required by those changes. This block is for review and corrections, not the first complete experiment attempt. | T1–T5 each have three independent runs and medians on the selected final code revision. A server/protocol/queue change triggers the full final suite on the new commit; documentation-only edits do not. Freeze feature work. |
+| Wed, 11:00–14:00 | Edit and format the existing report draft into 4–5 pages; finalize required documentation. | Report draws on gate-by-gate design paragraphs and real results; architecture, protocol, recovery, overload behavior, trade-offs, limitations, and future work are covered. AI usage is an existing log, not reconstructed from memory. |
 | Wed, 14:00–16:00 | Record and review the 5–7 minute demo video. | Required scenes are visible and understandable; video plays correctly and uses the exact submitted server/client. |
 | Wed, 16:00–18:00 | Test the final package from a clean copy on Ubuntu; check setup instructions and all deliverables. | Required startup works within 10 seconds; final compatibility check and browser smoke test pass; report and video open; no virtual environment or unrelated files are packaged. |
-| Wed, 18:00–20:00 | Walk through the implementation, finish release checks, tag the candidate, and upload. | Student can explain the main code paths; submission package/repository and video are accessible; Canvas submission is confirmed. |
+| Wed, 18:00–20:00 | Rehearse the implementation explanations already practiced at each gate, finish the file audit and release checks, tag the candidate, and upload. | Student can explain the main code paths; all added/modified/untracked files have been reviewed for submission; package/repository and video are accessible; Canvas submission is confirmed. |
 | Wed, 20:00–23:59 | Reserved contingency. | Correctness, packaging, upload, and access problems only. Stop discretionary edits by 22:30; aim to confirm submission by 23:00 if the early upload was blocked. |
 
 **Codex manages implementation and verification; the student owns understanding and submission decisions.**
 
 - Codex coordinates server, browser, and independent test/review work in parallel when their interfaces are agreed. Assign separate files to each implementation task and integrate through one coordinator.
 - The student checks browser behavior, reviews design explanations, supplies team details, records or narrates the demo, handles course administration, and confirms the final submission.
-- At each gate, record what passed, the relevant commit, outstanding defects, and the next task. Save short design notes while implementing so report and viva preparation do not start from zero.
+- At each gate, reserve about 10 minutes for the student to explain the block's code path, invariants, memory bounds, and one failure scenario. The final walkthrough is rehearsal, not first exposure to the implementation.
+- Append one short paragraph per gate to DESIGN_NOTES.md: problem, chosen design, reason, verification evidence, and remaining trade-off. Include the tested commit and open defects. By 03:00, these paragraphs and result tables should form a rough report draft.
+- Update AI_USAGE.md when a useful suggestion is verified or a suggestion is rejected/modified. Record the original suggestion, the issue, the correction, and how it was checked. Do not invent an example or mark student understanding as complete without confirmation.
+- Maintain FILE_AUDIT.json for every added or modified repository file, with purpose and submission disposition. Run the audit tool against starter-baseline and untracked files at each gate and again before packaging. Keep public source/test/measurement programs unchanged.
 - Do not make progress depend on the unresponsive teammate. Record actual contributions and communication attempts honestly. The brief lists four-person teams while the student describes a pair; confirm the approved arrangement and contribution handling with course staff today.
 
 **Correctness is the first release condition.**
@@ -53,7 +56,9 @@ The mandatory scope is a correct, usable deterministic-caption application, repr
 
 Use the supplied harness without changing its measurement logic. Report medians, P50/P95/P99 caption age, fresh-caption ratio, fresh-final ratio, final completeness, normal revision coverage, and recovery behavior. Separate normal and slow clients where available. Preserve raw logs, exact commands, dependency/VM versions, and the tested commit.
 
-Use identical workload parameters for at least one before/after stress comparison. Run impairment experiments sequentially and reset the network profile afterward. Additional bandwidth and burst checks help assess hidden-test risks, but do not replace T1–T5.
+Use identical workload parameters for at least one before/after stress comparison. First reuse experiments/baseline/ when its exact commands, source limits, runtime, and resource conditions match the planned after run. Otherwise run the needed before measurement on an isolated export of starter-baseline, leaving the working branch untouched. A mid-implementation version is not the primary starter baseline; any separate optimization ablation must be clearly labelled.
+
+Run the complete final suite on the chosen stable commit before sleep if possible. Record the commit with every result set; do not combine results from different code revisions into a single final table. After a server/protocol/queue fix, run the full final suite again on the replacement commit. Run impairment experiments sequentially and reset the network profile afterward. Additional bandwidth and burst checks help assess hidden-test risks, but do not replace T1–T5.
 
 If a test's capture window ends before the source finishes, preserve the prescribed result and diagnose the timestamps. A supported option such as an explicit source-segment count may be used for a separately labelled supplemental check. Do not silently change the required run or claim that an incomplete capture proves network loss.
 
@@ -67,6 +72,7 @@ If a test's capture window ends before the source finishes, preserve the prescri
 - [ ] CONTRIBUTIONS with accurate named work and contribution percentages; do not invent a teammate's work or agreement.
 - [ ] Git history and a final tagged revision that matches the code in the report/video.
 - [ ] Clean-package startup and final compatibility check; the compatibility checker alone is not a correctness test.
+- [ ] File audit reconciled with Git changes and untracked files; every new file has a purpose and a reviewed submission disposition; public measurement logic is unchanged.
 - [ ] Canvas submission to miniProject-Assignment4-submission confirmed, including video access.
 - [ ] Viva booking checked for Friday, 6 November, and all required attendees informed by the student. The live interview does not replace the video.
 

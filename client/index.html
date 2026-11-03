@@ -3,28 +3,49 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>LiveRecall Student Client</title>
+  <title>LiveRecall</title>
   <style>
-    body { font-family: system-ui, sans-serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
-    #status { font-weight: 700; }
-    #live { min-height: 6rem; border: 1px solid #bbb; border-radius: .4rem; padding: 1rem; margin: 1rem 0; }
-    .naive-line { padding: .25rem 0; border-bottom: 1px dotted #ddd; }
-    button { padding: .55rem .75rem; margin: .2rem; }
-    #recall { white-space: pre-wrap; margin-top: 1rem; border-left: 3px solid #ccc; padding-left: 1rem; }
-    .hint { font-size: .9rem; color: #555; }
+    body { font-family: system-ui, sans-serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; color: #222; }
+    header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: .5rem; }
+    h1 { margin: 0; }
+    #status { font-weight: 700; padding: .2rem .6rem; border-radius: 1rem; background: #eee; }
+    #status.connected { background: #d6f5dd; color: #145c26; }
+    #status.connecting, #status.reconnecting { background: #fff1c2; color: #6b4e00; }
+    #status.disconnected { background: #fbd5d5; color: #8a1c1c; }
+    #live { min-height: 10rem; max-height: 22rem; overflow-y: auto; border: 1px solid #bbb;
+            border-radius: .4rem; padding: .75rem 1rem; margin: 1rem 0; font-size: 1.15rem; line-height: 1.5; }
+    .caption { padding: .2rem 0; }
+    .caption .seg { font-size: .75rem; color: #888; margin-right: .5rem; font-variant-numeric: tabular-nums; }
+    .caption.final { color: #111; }
+    .caption.provisional { color: #8a6d00; font-style: italic; }
+    .caption.provisional::after { content: " …"; }
+    .tag { font-size: .7rem; font-style: normal; border-radius: .3rem; padding: 0 .35rem; margin-left: .4rem; vertical-align: middle; }
+    .final .tag { background: #d6f5dd; color: #145c26; }
+    .provisional .tag { background: #fff1c2; color: #6b4e00; }
+    .controls button { padding: .55rem .8rem; margin: .2rem .2rem .2rem 0; cursor: pointer; border: 1px solid #999; border-radius: .3rem; background: #f7f7f7; }
+    .controls button.selected { background: #2457c5; color: #fff; border-color: #2457c5; }
+    #recall { margin-top: .75rem; border-left: 3px solid #2457c5; padding-left: 1rem; }
+    #recall h2 { font-size: 1rem; margin: .3rem 0; }
+    #recall p { margin: .25rem 0; }
+    .hint, #stats { font-size: .85rem; color: #555; }
   </style>
 </head>
 <body>
-  <h1>LiveRecall</h1>
-  <p>Connection: <span id="status">disconnected</span></p>
-  <p class="hint">Starter behavior is intentionally naive: every received revision is appended as a new line.</p>
-  <div id="live"></div>
-  <div>
-    <button data-seconds="30">What did I miss? (30 s)</button>
+  <header>
+    <h1>LiveRecall</h1>
+    <span>Connection: <span id="status" class="disconnected">disconnected</span></span>
+  </header>
+  <p class="hint">Italic amber lines are <b>provisional</b> and update in place; black lines are <b>final</b>.</p>
+  <div id="live" aria-live="polite"></div>
+  <div class="controls">
+    <button id="miss" data-seconds="30" class="selected">What did I miss? (30 s)</button>
+    <span class="hint">Window:</span>
     <button data-seconds="15">15 s</button>
+    <button data-seconds="30">30 s</button>
     <button data-seconds="60">60 s</button>
   </div>
-  <div id="recall">TODO: implement the locally maintained recall view.</div>
+  <div id="recall"></div>
+  <p id="stats"></p>
   <script src="app.js"></script>
 </body>
 </html>

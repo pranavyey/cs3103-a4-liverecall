@@ -1,0 +1,110 @@
+{
+  "schema_version": 1,
+  "baseline_ref": "starter-baseline",
+  "description": "Register of project files created or modified during this assignment. Add or activate entries deliberately; the audit utility never approves changes automatically.",
+  "ignored_categories": [
+    "Python virtual environments and caches",
+    "Local environment credentials and machine files",
+    "Temporary runtime logs and scratch directories"
+  ],
+  "files": [
+    {
+      "path": ".gitignore",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Exclude local environments, caches, credentials, and temporary files. Created by us before the starter-baseline tag, so recorded explicitly despite not appearing in the baseline diff."
+    },
+    {
+      "path": "EXECUTION_PLAN.md",
+      "change": "added",
+      "state": "active",
+      "submission": "exclude",
+      "purpose": "Internal deadline schedule, completion gates, and Git recovery workflow; retain in the repository but omit from the final submission ZIP."
+    },
+    {
+      "path": "experiments/baseline/liverecall-baseline-summary.txt",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Explain reproducible starter measurements, environment, exact commands, and timing limitations for the required comparison."
+    },
+    {
+      "path": "experiments/baseline/liverecall-baseline-evidence.zip",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Preserve raw starter CSV/JSON results and environment/setup logs without altering instructor measurement programs."
+    },
+    {
+      "path": "solution_server.py",
+      "change": "modified",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Implement required server revision state, bounded recovery history, and safe client recovery/live handoff."
+    },
+    {
+      "path": "tests/test_server_core.py",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Independent protocol correctness and recovery regression tests; does not replace or modify the instructor harness."
+    },
+    {
+      "path": "FILE_AUDIT.json",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Machine-readable register of created/modified files, their purpose, and final submission disposition."
+    },
+    {
+      "path": "tools/audit_submission.py",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Read-only audit of Git changes and untracked files against this register, with protected instructor files checked against starter-baseline."
+    },
+    {
+      "path": "docs/SERVER_CORE.md",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Explain server correctness invariants, recovery behavior, resource bounds, and remaining overload work for review and viva preparation."
+    },
+    {
+      "path": "tests/test_server_bounds.py",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Exercise history and active-state entry/UTF-8 byte limits, actual expiry, and replay protection after eviction."
+    },
+    {
+      "path": "DESIGN_NOTES.md",
+      "change": "added",
+      "state": "active",
+      "submission": "optional",
+      "purpose": "Record one design/evidence paragraph and student explanation status at each gate, for report drafting and viva preparation."
+    },
+    {
+      "path": "AI_USAGE.md",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Maintain the required real-time declaration of AI assistance, verified suggestions, actual corrections, and student review status."
+    },
+    {
+      "path": "experiments/server-core/liverecall-server-core-summary.txt",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Record exact tested commit, Ubuntu checks, comparable recovery results, and source/capture limitations."
+    },
+    {
+      "path": "experiments/server-core/liverecall-server-core-evidence.zip",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Preserve raw core-validation CSV/JSON, tests, environment hashes, and exact-commit provenance."
+    }
+  ]
+}
