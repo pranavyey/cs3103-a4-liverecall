@@ -1,29 +1,43 @@
 /*
- * Working but deliberately naive LiveRecall browser starter.
+ * LiveRecall browser client.
  *
- * Provided mechanical behavior:
- *   - opens a WebSocket
- *   - sends CLIENT_HELLO
- *   - visibly appends every received CAPTION_UPDATE
- *   - displays whether an update is provisional/final
+ * Local state (one entry per segment):
+ *   segments: Map<segment, {segment, revision, final, text, source_ts}>
+ *   - a newer revision replaces the older one in place;
+ *   - once a segment is final it never changes (later or repeated updates are ignored);
+ *   - finals are kept for KEEP_SECONDS (>= 60 s) so recall works from local state.
  *
- * Graded TODOs:
- *   - replace revisions rather than appending duplicates
- *   - maintain >=60 s of finalized local state
- *   - implement 30 s default recall + 15/30/60 s views
- *   - automatic reconnect + correct resume state
- *   - HISTORY merge/deduplication
- *   - usable final UI
+ * Resume cursor = the highest (segment, revision) FINAL we hold. Provisional
+ * updates never move it, so a reconnect asks only for finals we really lack.
+ *
+ * Optional URL parameters: ?server=ws://host:8765&session=L1
  */
 
-const WS_URL = "ws://127.0.0.1:8765";
+const params = new URLSearchParams(location.search);
+const WS_URL = params.get("server") || `ws://${location.hostname || "127.0.0.1"}:8765`;
+const SESSION = params.get("session") || "L1";
+const KEEP_SECONDS = 90;            // local final history, comfortably above 60 s
+const MAX_LOCAL_SEGMENTS = 2000;    // hard bound on local state
+const LIVE_ROWS = 40;               // rows kept on screen
+const RECONNECT_MIN_MS = 500;
+const RECONNECT_MAX_MS = 5000;
+const DEMO_DROP_MS = 8000;          // how long the demo "drop" button stays offline
+
 const statusEl = document.getElementById("status");
 const liveEl = document.getElementById("live");
 const recallEl = document.getElementById("recall");
+const statsEl = document.getElementById("stats");
 
-let ws;
+const segments = new Map();
+const rows = new Map();             // segment -> DOM row
+let cursor = { segment: 0, revision: 0 };
+let ws = null;
+let retryMs = RECONNECT_MIN_MS;
+let reconnectTimer = null;
+let recallSeconds = null;           // null = recall panel closed
+const stats = { applied: 0, ignored: 0, recovered: 0, reconnects: 0 };
 
-function numericClientId() {
+function clientId() {
   const key = "liverecall-client-id";
   let value = sessionStorage.getItem(key);
   if (!value) {
@@ -33,56 +47,187 @@ function numericClientId() {
   return Number(value);
 }
 
-function appendNaively(msg) {
-  const row = document.createElement("div");
-  row.className = "naive-line";
-  const state = msg.final ? "FINAL" : "PROVISIONAL";
-  row.textContent = `[${state}] segment ${msg.segment} rev ${msg.revision}: ${msg.text}`;
-  liveEl.appendChild(row);
-  liveEl.scrollTop = liveEl.scrollHeight;
+function setStatus(state, text) {
+  statusEl.className = state;
+  statusEl.textContent = text || state;
+}
+
+function isNewerCursor(seg, rev) {
+  return seg > cursor.segment || (seg === cursor.segment && rev > cursor.revision);
+}
+
+// Returns true if the update changed local state.
+function apply(msg) {
+  if (msg.session !== SESSION || !Number.isInteger(msg.segment) || !Number.isInteger(msg.revision)) {
+    return false;
+  }
+  const old = segments.get(msg.segment);
+  const tooOld = !old && msg.segment <= cursor.segment;      // already pruned locally
+  if (tooOld || (old && (old.final || msg.revision <= old.revision))) {
+    stats.ignored++;                                         // duplicate or stale
+    return false;
+  }
+  const entry = {
+    segment: msg.segment, revision: msg.revision, final: msg.final === true,
+    text: String(msg.text ?? ""), source_ts: Number(msg.source_ts) || Date.now() / 1000,
+  };
+  segments.set(entry.segment, entry);
+  if (entry.final && isNewerCursor(entry.segment, entry.revision)) {
+    cursor = { segment: entry.segment, revision: entry.revision };
+  }
+  stats.applied++;
+  render(entry);
+  return true;
+}
+
+function render(entry) {
+  let row = rows.get(entry.segment);
+  if (!row) {
+    row = document.createElement("div");
+    row.innerHTML = '<span class="seg"></span><span class="text"></span><span class="tag"></span>';
+    row.querySelector(".seg").textContent = `#${entry.segment}`;
+    // Keep rows ordered by segment even if a recovered one arrives late.
+    let after = null;
+    for (const [seg, r] of rows) if (seg > entry.segment && (!after || seg < after.seg)) after = { seg, r };
+    liveEl.insertBefore(row, after ? after.r : null);
+    rows.set(entry.segment, row);
+  }
+  row.className = `caption ${entry.final ? "final" : "provisional"}`;
+  row.querySelector(".text").textContent = entry.text;
+  row.querySelector(".tag").textContent = entry.final ? "final" : `rev ${entry.revision}`;
+  while (rows.size > LIVE_ROWS) {
+    const first = Math.min(...rows.keys());
+    rows.get(first).remove();
+    rows.delete(first);
+  }
+  const nearBottom = liveEl.scrollHeight - liveEl.scrollTop - liveEl.clientHeight < 80;
+  if (nearBottom) liveEl.scrollTop = liveEl.scrollHeight;
+}
+
+function prune() {
+  const cutoff = Date.now() / 1000 - KEEP_SECONDS;
+  for (const [seg, e] of segments) {
+    if ((e.final && e.source_ts < cutoff) || segments.size > MAX_LOCAL_SEGMENTS) segments.delete(seg);
+  }
+}
+
+function showRecall() {
+  for (const b of document.querySelectorAll(".controls button")) {
+    b.classList.toggle("selected", Number(b.dataset.seconds) === (recallSeconds ?? 30) && b.id !== "miss");
+  }
+  if (recallSeconds === null) { recallEl.innerHTML = ""; return; }
+  const cutoff = Date.now() / 1000 - recallSeconds;
+  const finals = [...segments.values()]
+    .filter((e) => e.final && e.source_ts >= cutoff)
+    .sort((a, b) => a.segment - b.segment);
+  recallEl.innerHTML = "";
+  const h = document.createElement("h2");
+  h.textContent = `Last ${recallSeconds} s (${finals.length} final caption${finals.length === 1 ? "" : "s"})`;
+  recallEl.appendChild(h);
+  if (!finals.length) {
+    const p = document.createElement("p");
+    p.className = "hint";
+    p.textContent = "Nothing finalized in this window yet.";
+    recallEl.appendChild(p);
+  }
+  for (const e of finals) {
+    const p = document.createElement("p");
+    p.textContent = e.text;
+    recallEl.appendChild(p);
+  }
+}
+
+function updateStats() {
+  statsEl.textContent = `Resume cursor: segment ${cursor.segment} rev ${cursor.revision} · ` +
+    `applied ${stats.applied} · ignored duplicate/stale ${stats.ignored} · ` +
+    `recovered from history ${stats.recovered} · reconnects ${stats.reconnects}`;
+}
+
+let countdownTimer = null;
+
+function scheduleReconnect(delay) {
+  clearTimeout(reconnectTimer);
+  clearInterval(countdownTimer);
+  const due = Date.now() + delay;
+  const tick = () => {
+    const left = Math.max(1, Math.ceil((due - Date.now()) / 1000));
+    setStatus("reconnecting", `reconnecting in ${left}`);
+  };
+  tick();
+  countdownTimer = setInterval(tick, 250);
+  reconnectTimer = setTimeout(connect, delay);
 }
 
 function connect() {
-  statusEl.textContent = "connecting";
-  ws = new WebSocket(WS_URL);
+  clearTimeout(reconnectTimer);
+  clearInterval(countdownTimer);
+  setStatus("connecting", "connecting");
+  const socket = new WebSocket(WS_URL);
+  ws = socket;
 
-  ws.addEventListener("open", () => {
-    statusEl.textContent = "connected";
-    ws.send(JSON.stringify({
+  socket.addEventListener("open", () => {
+    if (ws !== socket) return;
+    retryMs = RECONNECT_MIN_MS;
+    setStatus("connected");
+    socket.send(JSON.stringify({
       type: "CLIENT_HELLO",
-      client_id: numericClientId(),
-      session: "L1",
-      last_segment: 0,       // TODO: resume latest finalized state
-      last_revision: 0,
-      history_seconds: 30
+      client_id: clientId(),
+      session: SESSION,
+      last_segment: cursor.segment,
+      last_revision: cursor.revision,
+      history_seconds: 60,     // ask for the full window so 60 s recall works after a late join
     }));
   });
 
-  ws.addEventListener("message", (event) => {
-    const msg = JSON.parse(event.data);
+  socket.addEventListener("message", (event) => {
+    if (ws !== socket) return;
+    let msg;
+    try { msg = JSON.parse(event.data); } catch { return; }
     if (msg.type === "CAPTION_UPDATE") {
-      appendNaively(msg);
-    } else if (msg.type === "HISTORY") {
-      console.log(`HISTORY with ${msg.items?.length ?? 0} item(s)`, msg);
-      // TODO: merge history without stale/duplicate final captions.
+      apply(msg);
+    } else if (msg.type === "HISTORY" && Array.isArray(msg.items)) {
+      // Oldest first; apply() drops anything we already hold.
+      for (const item of msg.items) if (apply(item)) stats.recovered++;
     }
+    updateStats();
   });
 
-  ws.addEventListener("close", () => {
-    statusEl.textContent = "disconnected";
-    // TODO: automatic reconnect after a short delay, using finalized resume state.
+  socket.addEventListener("close", () => {
+    if (ws !== socket) return;          // an intentional demo drop handles its own reconnect
+    ws = null;
+    stats.reconnects++;
+    scheduleReconnect(retryMs);
+    retryMs = Math.min(retryMs * 2, RECONNECT_MAX_MS);
   });
 
-  ws.addEventListener("error", () => {
-    statusEl.textContent = "connection error";
-  });
+  socket.addEventListener("error", () => { /* close follows and drives reconnect */ });
 }
 
-for (const button of document.querySelectorAll("button[data-seconds]")) {
+// Demo helper: drop the connection for a few seconds, then reconnect automatically.
+function demoDrop() {
+  if (!ws) return;
+  const socket = ws;
+  ws = null;
+  socket.close();
+  stats.reconnects++;
+  scheduleReconnect(DEMO_DROP_MS);
+}
+
+for (const button of document.querySelectorAll(".controls button")) {
   button.addEventListener("click", () => {
-    const seconds = Number(button.dataset.seconds);
-    recallEl.textContent = `TODO: show finalized captions from the previous ${seconds} seconds using local state.`;
+    const s = Number(button.dataset.seconds);
+    recallSeconds = recallSeconds === s && button.id !== "miss" ? null : s;
+    if (button.id === "miss") recallSeconds = 30;
+    showRecall();
   });
 }
 
+const dropButton = document.createElement("button");
+dropButton.textContent = `Simulate disconnect (${DEMO_DROP_MS / 1000} s)`;
+dropButton.addEventListener("click", demoDrop);
+document.querySelector(".controls").appendChild(dropButton);
+
+setInterval(() => { prune(); if (recallSeconds !== null) showRecall(); }, 1000);
+window.liverecall = { segments, stats, get cursor() { return cursor; }, demoDrop };
+updateStats();
 connect();
