@@ -113,6 +113,7 @@ sudo ./network_profiles/delay_loss.sh lo; python run_demo.py --clients 100 --dur
 | T4, 100 clients, 20% disconnect, `--source-segments 40` | 79c9720 | **100%**, 120 recovered items, 0/0, 0 connection errors; 21 tests OK on the VM |
 | Repeated reconnects (tools/stress_reconnect.py), 100 clients x 60 segments | b1961d3 | random: 1111 connects, 2023 finals recovered, HISTORY P95 2.9 ms; storm (all every 4 s): 1500 connects, HISTORY P95 16.1 ms; **both 100/100 complete, 0/0**, no resyncs. Starter on the same script (Mac, 30x25): 0/30 complete, 67.87% |
 | Long run: 600 s, 100 clients, 10% slow, 600 segments, RSS sampled every 5 s | b1961d3 | **RSS 32.3 MB at 1 min, 32.4 MB at 10 min (flat)**; 100% completeness, 0/0; normal P95 19.9 ms, 100% fresh, all 162000 normal revisions; slow P50 1.4 s, P95 9.0 s; 60 slow-mode entries; no resyncs. Harness coverage 94.24% counts slow readers' coalesced provisionals |
+| Recovery after impairment: delay_loss on from 29 to 69 s of a 120 s run, 100 clients | b1961d3 | normal P95 per 10 s: ~21 ms before; 476 to 1011 ms during (fresh 82.8 to 95.9%); **20.9 ms, 100% fresh in the first window after reset**; 0 slow-mode entries; 100%, 0/0 |
 | T3 prescribed (60 s) | 405da57 vs bb50641 | 88.42% vs 89.82%; both cut off; normal P95 20 ms, 100% fresh; slow P50 6.4 s; all 10 slow readers caught at late_for=6.0 s |
 
 ## 5. Before/after comparison (required)
