@@ -15,7 +15,7 @@ Live tracker that sits next to EXECUTION_PLAN.md. Any agent or session picking u
 | 3. Browser client | Tue 18:30 to 20:30 | Done | 30106e2 | tests/browser_e2e.js (2 tabs + late joiner, no gaps or duplicates) |
 | 4. Bounded sending, slow-client isolation | Tue 20:30 to 22:30 | Design done; T5 check outstanding | fbcb49f, plus the late-pong change (see log) | One-run dev checks only (see below) |
 | 5. Stress, recovery, bandwidth, long runs | Tue 22:30 to Wed 00:30 | Done | b1961d3 (tools/stress_reconnect.py), server 79c9720 | VM gate5/ folder: reconnect, storm, 10-min memory, impairment recovery |
-| 6. Required T1 to T5 on Ubuntu, 3 runs each | Wed 00:30 to 03:00, 09:00 to 11:00 | Not started | | |
+| 6. Required T1 to T5 on Ubuntu, 3 runs each | Wed 00:30 to 03:00, 09:00 to 11:00 | Done (candidate-1) | e77a2b9, tag candidate-1 | experiments/official/candidate-1/ |
 | 7. Report and docs | Wed 11:00 to 14:00 | Not started; DESIGN_NOTES.md is kept per gate | | |
 | 8. Demo video | Wed 14:00 to 16:00 | Not started | | |
 | 9. Clean-package test, release, upload | Wed 16:00 to 20:00 | Not started | | |
@@ -59,6 +59,8 @@ Mac and container results are only sanity checks. Report numbers must come from 
 
 ## Change log
 
+- 02:03 Wed: official set on candidate-1 finished: 33 runs, all exit 0, 0 dup/stale. Prescribed T1 to T4 all cut off on the VM (95.45 / 87.76 / 91.18 / 85.53%); T5 100% with 0 slow-mode entries; every supplemental run 100%. The summary script's cut-off count was wrong (said 1 of 3) and was fixed; SUMMARY.txt recomputed. Results copied to experiments/official/candidate-1/ and report_dump.md.
+- 01:35 Wed: first official attempt spoiled: the pasted commands ran the script twice (inside and outside tmux), sharing port 8765 and the output folder. Killed and restarted cleanly at 01:37.
 - Gate 5 item 3 (VM, b1961d3): delay_loss.sh applied from 29 s to 69 s of a 120 s run. Normal-client P95 by 10 s window: about 21 ms before; 476 to 1011 ms during (fresh 82.8 to 95.9%); 20.9 ms and 100% fresh in the first window after reset. 0 slow-mode entries, 100% completeness, 0 dup/stale. **Gate 5 done.**
 - Gate 5 item 2 (VM, b1961d3): 10-minute run, 100 clients, 10% slow, 600 segments. RSS 32.3 MB at 1 min, 32.4 MB at the end (flat). Completeness 100%, 0 dup/stale, normal P95 19.9 ms and 100% fresh (all 162000 normal revisions received), slow P50 1.4 s / P95 9.0 s, 60 slow-mode entries, no resyncs.
 - Gate 5 item 1 (VM, b1961d3, tools/stress_reconnect.py): 100 clients x 60 segments. Random reconnects: 1111 connects, 2023 finals recovered, HISTORY P95 2.9 ms. Storm (all reconnect together every 4 s): 1500 connects, 900 recovered, HISTORY P95 16.1 ms. Both 100/100 clients complete, 0 duplicate, 0 stale, no coalescing or resyncs.

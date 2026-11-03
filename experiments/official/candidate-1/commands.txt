@@ -1,0 +1,12 @@
+=== t1  (01:37:14)  run_demo.py --clients 20 --duration 20 --runs 3
+=== t2  (01:38:19)  run_demo.py --clients 100 --duration 40 --runs 3
+=== t3  (01:40:37)  run_demo.py --clients 100 --duration 60 --runs 3 --slow-percent 10 --slow-ms 500
+=== t4  (01:43:56)  run_demo.py --clients 100 --duration 60 --runs 3 --disconnect-percent 20 --disconnect-at 15 --disconnect-seconds 5
+T5 qdisc: qdisc netem 800c: root refcnt 2 limit 1000 delay 120ms  30ms loss 3%
+=== t5  (01:47:26)  run_demo.py --clients 100 --duration 40 --runs 3
+=== t1_supp  (01:49:34)  run_demo.py --clients 20 --duration 20 --runs 3 --source-segments 17
+=== t2_supp  (01:50:36)  run_demo.py --clients 100 --duration 40 --runs 3 --source-segments 38
+=== t3_supp  (01:52:38)  run_demo.py --clients 100 --duration 60 --runs 3 --slow-percent 10 --slow-ms 500 --source-segments 60
+=== t4_supp  (01:55:41)  run_demo.py --clients 100 --duration 60 --runs 3 --disconnect-percent 20 --disconnect-at 15 --disconnect-seconds 5 --source-segments 60
+=== t5_supp  (01:58:43)  run_demo.py --clients 100 --duration 40 --runs 3 --source-segments 35
+=== t5_bw_supp  (02:00:52)  run_demo.py --clients 100 --duration 40 --runs 3 --source-segments 38

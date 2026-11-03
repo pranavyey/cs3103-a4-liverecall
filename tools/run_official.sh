@@ -68,9 +68,11 @@ sudo ./network_profiles/reset.sh lo > /dev/null
   for f in t1 t2 t3 t4 t5 t1_supp t2_supp t3_supp t4_supp t5_supp t5_bw_supp; do
     log="$OUT/$f.log"
     echo "================ $f"
-    # A run is cut off if its results were written before SOURCE_DONE.
-    awk '/SOURCE_DONE/{d=1} /Results written/{n++; if(!d)c++; d=0}
-         END{printf "runs: %d, cut off (results before SOURCE_DONE): %d\n", n, c}' "$log"
+    # Each run prints SOURCE_DONE and "Results written" once, in some order;
+    # a run is cut off if "Results written" comes first in its pair.
+    grep -o -E 'SOURCE_DONE|Results written' "$log" |
+      awk '{k++; if(k%2==1){n++; if($0=="Results written")c++}}
+           END{printf "runs: %d, cut off (results before SOURCE_DONE): %d\n", n, c}'
     echo "SLOW_MODE_ENTER lines: $(grep -c SLOW_MODE_ENTER "$log")  clients: $(grep SLOW_MODE_ENTER "$log" | grep -o 'client=[^ ]*' | sort -u | wc -l)"
     echo "duplicates by run: $(grep 'Duplicate messages' "$log" | awk '{printf "%s ", $NF}')  stale by run: $(grep 'Stale messages' "$log" | awk '{printf "%s ", $NF}')"
     sed -n '/=== Median across independent runs ===/,/^$/p' "$log"

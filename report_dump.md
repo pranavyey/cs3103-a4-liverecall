@@ -89,16 +89,30 @@ sudo ./network_profiles/delay_loss.sh lo; python run_demo.py --clients 100 --dur
   - Normal and slow clients separately for T3.
   - Duplicate and stale counts.
   - SLOW_MODE_ENTER counts from the server log (as an extra column).
-- **Results table, official (TODO, Gate 6, tagged commit):**
+- **Results table, official.** Tag candidate-1 (e77a2b9; server code as in 79c9720), Ubuntu VM, Wed 4 Nov 01:37 to 02:03. Median of 3 runs each; every run exited 0, with 0 duplicate and 0 stale in all 33 runs. Evidence: experiments/official/candidate-1/ (SUMMARY.txt, logs, csv_and_json.tar.gz).
 
-| Test | Completeness | P50 | P95 | P99 | Fresh | Fresh final | Coverage | Dup/stale | Notes |
+Prescribed spec commands. All 3 runs of T1 to T4 were cut off (results written before SOURCE_DONE); T5 wasn't:
+
+| Test | Completeness | P50 | P95 | P99 | Fresh | Fresh final | Coverage | Other |
+|---|---|---|---|---|---|---|---|---|
+| T1 (20 clients, 20 s) | 95.45% | 4.91 ms | 8.14 ms | 12.46 ms | 100% | 95.45% | 96.97% | |
+| T2 (100 clients, 40 s) | 87.76% | 14.03 ms | 21.47 ms | 25.28 ms | 100% | 87.76% | 88.44% | |
+| T3 (10% slow 500 ms, 60 s) | 91.18% | 9.74 ms | 2592 ms | 8495 ms | 94.55% | 82.89% | 87.76% | normal P95 20.09 ms; slow P95 9455 ms, slow P50 about 6.1 s; 10 slow-mode clients per run |
+| T4 (20% disconnect, 60 s) | 85.53% | 11.99 ms | 19.15 ms | 21.69 ms | 100% | 84.21% | 84.91% | recovery P95 4.88 ms; 120 recovered items per run |
+| T5 (delay_loss, 40 s) | **100%** | 252.70 ms | 645.19 ms | 843.56 ms | 90.70% | 91.69% | 99.93% | **0 slow-mode entries in 3 runs** |
+
+Supplemental, same commands plus --source-segments so the source finishes before capture ends (0 of 3 runs cut off for every test):
+
+| Test | Segments | Completeness | P50 | P95 | P99 | Fresh | Fresh final | Coverage | Other |
 |---|---|---|---|---|---|---|---|---|---|
-| T1 | | | | | | | | | |
-| T2 | | | | | | | | | |
-| T3 normal / slow | | | | | | | | | |
-| T4 | | | | | | | | | recovery P95 |
-| T5 delay_loss | | | | | | | | | |
-| T5 2 Mbit (extra) | | | | | | | | | |
+| T1 | 17 | **100%** | 5.21 ms | 8.38 ms | 9.57 ms | 100% | 100% | 100% | |
+| T2 | 38 | **100%** | 13.70 ms | 21.39 ms | 23.84 ms | 100% | 100% | 100% | |
+| T3 | 60 | **100%** | 10.79 ms | 3500 ms | 8684 ms | 93.81% | 90.00% | 96.06% | normal P95 19.56 ms; slow P95 9510 ms |
+| T4 | 60 | **100%** | 12.47 ms | 19.36 ms | 22.69 ms | 100% | 98.33% | 98.26% | recovery P95 4.58 ms |
+| T5 delay_loss | 35 | **100%** | 253.25 ms | 626.50 ms | 839.60 ms | 91.30% | 90.80% | 99.78% | 0 slow-mode entries |
+| T5 2 Mbit (extra) | 38 | **100%** | 15.71 ms | 50.74 ms | 56.35 ms | 100% | 100% | 100% | 0 slow-mode entries |
+
+Notes: in T3, coverage below 100% is the slow readers' coalesced provisionals; normal clients stay 100% fresh. The T3 overall P95 and P99 are dominated by the 10% slow readers.
 
 **Dev results so far (VM, one run each, for the narrative only):**
 
@@ -122,7 +136,11 @@ sudo ./network_profiles/delay_loss.sh lo; python run_demo.py --clients 100 --dur
   - T3: completeness 82.89%, slow-reader P95 24.8 s, normal P95 17.3 ms, P99 21.5 s.
   - T4: completeness 83.95%, 0 recovered history items (the starter sends an empty HISTORY).
   - Supplemental T4, 55 segments: 97.82%, 0 recovered.
-- **After:** the final tagged commit, with the **same parameters** (TODO). Dev indications:
+- **After (official, candidate-1, same prescribed parameters, median of 3):**
+  - T3: completeness 82.89% → **91.18%** (both cut off on the VM), slow-reader P95 24.8 s → **9.5 s**, P99 21.5 s → **8.5 s**, normal P95 17.3 → 20.1 ms (still 100% fresh).
+  - T4: completeness 83.95% → 85.53% (both cut off), recovered history items **0 → 120** per run, recovery P95 4.88 ms.
+  - With no cutoff (supplemental): T4 100% (starter supplemental, 55 segments, 1 run: 97.82%); T3 100%.
+- Earlier dev indications:
   - Cloud container T3: 99.7 to 99.8% completeness, slow P95 down from 24.8 s.
   - T4: 100%, 120 recovered items.
 - **Second comparison, a single optimization disabled:**

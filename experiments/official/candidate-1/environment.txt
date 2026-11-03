@@ -1,0 +1,8 @@
+label: candidate-1
+date: 2026-11-04T01:37:11+08:00
+host: liverecall-a4  cpus: 2
+Linux liverecall-a4 6.8.0-147-generic #147-Ubuntu SMP PREEMPT_DYNAMIC Thu Sep 24 11:39:52 UTC 2026 aarch64 aarch64 aarch64 GNU/Linux
+PRETTY_NAME="Ubuntu 24.04.5 LTS"
+Python 3.12.3
+websockets==16.1.1
+qdisc before runs: qdisc noqueue 0: root refcnt 2 
