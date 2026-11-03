@@ -282,6 +282,9 @@ class ServerCoreTests(unittest.IsolatedAsyncioTestCase):
         _, sixty = await self.client(history_seconds=60)
         _, thirty = await self.client(history_seconds=30)
         _, zero = await self.client(history_seconds=0)
+        # Asking for more than 60 s is served up to 60 s, not rejected.
+        _, longer = await self.client(history_seconds=120)
+        self.assertEqual([m["segment"] for m in longer], [2, 3, 4])
         self.assertEqual([m["segment"] for m in sixty], [2, 3, 4])
         self.assertEqual([m["segment"] for m in thirty], [3, 4])
         self.assertEqual(zero, [])

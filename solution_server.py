@@ -24,7 +24,8 @@ import websockets
 from websockets.exceptions import ConnectionClosed
 
 
-HISTORY_SECONDS = 60.0
+HISTORY_SECONDS = 60.0          # most history a client can request (spec: 60 s)
+HISTORY_RETAIN_SECONDS = 70.0   # kept internally: a margin for timing jitter
 MAX_HISTORY_ITEMS = 32_768
 MAX_HISTORY_BYTES = 32 * 1024 * 1024
 MAX_ACTIVE_ITEMS = 128
@@ -72,9 +73,11 @@ def client_resume(hello: dict[str, Any]) -> tuple[int, int, float]:
     segment, revision = hello.get("last_segment", 0), hello.get("last_revision", 0)
     seconds = hello.get("history_seconds", 30)
     if (not integer(segment) or not integer(revision)
-            or not finite_number(seconds) or not 0 <= seconds <= HISTORY_SECONDS):
+            or not finite_number(seconds) or seconds < 0):
         raise ValueError("Invalid resume cursor or history window")
-    return segment, revision, float(seconds)
+    # Older captions are not guaranteed, so a longer request is served up to
+    # the promised window instead of being rejected.
+    return segment, revision, float(min(seconds, HISTORY_SECONDS))
 
 
 @dataclass(frozen=True, slots=True)
@@ -131,7 +134,7 @@ class SessionState:
     def prune(self, now: float | None = None) -> None:
         now = time.monotonic() if now is None else now
         while self.history and (
-            self.history[0].received_at < now - HISTORY_SECONDS
+            self.history[0].received_at < now - HISTORY_RETAIN_SECONDS
             or len(self.history) > MAX_HISTORY_ITEMS
             or self.history_bytes > MAX_HISTORY_BYTES
         ):
@@ -356,8 +359,10 @@ class ClientSender:
                 # No await between clearing the flag and taking the snapshot,
                 # so nothing can fall between the snapshot and new live work.
                 self.resync = False
+                # Server-initiated resync: send every retained final after the
+                # cursor, not only the client-requestable 60 s.
                 self.history, self.active = self.state.snapshot(
-                    self.cursor, HISTORY_SECONDS)
+                    self.cursor, HISTORY_RETAIN_SECONDS)
                 await self._send_snapshot()
                 continue
             if not self.pending:
