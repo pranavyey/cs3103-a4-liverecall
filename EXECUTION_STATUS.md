@@ -2,9 +2,9 @@
 
 Live tracker that sits next to EXECUTION_PLAN.md. Any agent or session picking up the work reads this first and updates it at each gate: what passed, the commit, open defects, and the next task. Times are Singapore time.
 
-**Last updated:** Tue 3 Nov 2026, 23:33, by Claude (chat session with Pranav)
+**Last updated:** Wed 4 Nov 2026, 03:11, by Claude (chat session with Pranav)
 **Branch:** work/implementation, tracking origin/work/implementation. main is not advanced yet.
-**Current plan block:** Tue 22:30 to Wed 00:30 (Gate 5: stress, recovery, bandwidth, long runs). Gate 4 finished about 23:15, roughly 45 min past its block; Gate 5 is partly done.
+**Current plan block:** sleep, 03:00 to 09:00. Gates 1 to 6 are done and pushed (tag candidate-1); AI_USAGE.md and DESIGN_NOTES.md are reviewed and complete.
 
 ## Gates
 
@@ -16,7 +16,7 @@ Live tracker that sits next to EXECUTION_PLAN.md. Any agent or session picking u
 | 4. Bounded sending, slow-client isolation | Tue 20:30 to 22:30 | Design done; T5 check outstanding | fbcb49f, plus the late-pong change (see log) | One-run dev checks only (see below) |
 | 5. Stress, recovery, bandwidth, long runs | Tue 22:30 to Wed 00:30 | Done | b1961d3 (tools/stress_reconnect.py), server 79c9720 | VM gate5/ folder: reconnect, storm, 10-min memory, impairment recovery |
 | 6. Required T1 to T5 on Ubuntu, 3 runs each | Wed 00:30 to 03:00, 09:00 to 11:00 | Done (candidate-1) | e77a2b9, tag candidate-1 | experiments/official/candidate-1/ |
-| 7. Report and docs | Wed 11:00 to 14:00 | Not started; DESIGN_NOTES.md is kept per gate | | |
+| 7. Report and docs | Wed 11:00 to 14:00 | Docs done (AI_USAGE.md, DESIGN_NOTES.md); report not started, material in report_dump.md | | |
 | 8. Demo video | Wed 14:00 to 16:00 | Not started | | |
 | 9. Clean-package test, release, upload | Wed 16:00 to 20:00 | Not started | | |
 
@@ -50,12 +50,12 @@ Mac and container results are only sanity checks. Report numbers must come from 
 - **Before/after comparison:** use experiments/baseline/ (starter, same T3/T4 parameters) as the before side.
 - **Course admin:** team-size and contribution arrangement still to confirm with course staff.
 
-## Next tasks
+## Next tasks (Wed morning)
 
-1. Slow-mode rule final for now (405da57); VM T3/T5 checked. Record the student's Gate 4 explanation in DESIGN_NOTES and finish the AI_USAGE entries.
-2. Capture cutoff explained (VM timer overshoot, see open items). Plan the official runs to state it and add --source-segments supplemental runs.
-3. Gate 5 stress checks: bursts, repeated reconnects, longer runs, bandwidth profile.
-4. Tag a pre-sleep checkpoint, then the official three-run T1 to T5 set on Ubuntu.
+1. 09:00 to 11:00, review: read experiments/official/candidate-1/SUMMARY.txt and decide whether candidate-1 is final. Only fix real defects; any server change means rerunning tools/run_official.sh on the new tag. Optionally message course staff about the VM capture cutoff (draft in chat; evidence in Gate 6 of DESIGN_NOTES.md).
+2. 11:00 to 14:00, report: draft the 4 to 5 page report.pdf from report_dump.md (official tables and before/after comparison already filled in).
+3. 14:00 to 16:00, demo video (5 to 7 min): live revisions, recall, reconnect, late join, slow client.
+4. 16:00 to 20:00: clean-package test on Ubuntu, README.md and CONTRIBUTIONS.md, file audit (leave out report_dump.md, venv, experiments/mac-local), final tag, upload.
 
 ## Change log
 
