@@ -91,6 +91,20 @@
       "state": "active",
       "submission": "include",
       "purpose": "Maintain the required real-time declaration of AI assistance, verified suggestions, actual corrections, and student review status."
+    },
+    {
+      "path": "experiments/server-core/liverecall-server-core-summary.txt",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Record exact tested commit, Ubuntu checks, comparable recovery results, and source/capture limitations."
+    },
+    {
+      "path": "experiments/server-core/liverecall-server-core-evidence.zip",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Preserve raw core-validation CSV/JSON, tests, environment hashes, and exact-commit provenance."
     }
   ]
 }
