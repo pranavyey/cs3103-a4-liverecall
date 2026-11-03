@@ -1,0 +1,143 @@
+LiveRecall Ubuntu readiness and starter baseline evidence
+Collected 3 November 2026 (Singapore time).
+
+These are measurements of the supplied naive starter, not a completed solution.
+The original application and public measurement files were not modified.
+
+ENVIRONMENT
+Dedicated Multipass VM: liverecall-a4; Ubuntu 24.04.5 LTS, ARM64.
+Allocated: 2 CPUs, 4 GB RAM, 15 GB disk. Address at setup: 192.168.252.4.
+Python 3.12.3; websockets 16.1.1; iproute2 installed.
+Existing mininet-lab VM remained running and was not changed. Other host activity
+was not controlled; report this when comparing timing-sensitive results.
+No network impairment was active during these baselines.
+A temporary 1 ms loopback netem check passed and was reset to noqueue.
+submission_check.py passed startup/WebSocket compatibility only.
+See environment.txt for exact kernel, package versions, and source SHA-256 hashes.
+
+RE-ENTRY
+multipass shell liverecall-a4
+cd /home/ubuntu/liverecall
+source .venv/bin/activate
+Guest raw evidence: /home/ubuntu/liverecall-baseline
+
+EXACT EXPERIMENT COMMANDS (run in /home/ubuntu/liverecall)
+.venv/bin/python submission_check.py
+.venv/bin/python run_demo.py --clients 20 --duration 20 --runs 1 --output-stem /home/ubuntu/liverecall-baseline/t1 --quiet-server
+.venv/bin/python run_demo.py --clients 100 --duration 60 --runs 3 --slow-percent 10 --slow-ms 500 --output-stem /home/ubuntu/liverecall-baseline/t3 --quiet-server
+.venv/bin/python run_demo.py --clients 100 --duration 60 --runs 3 --disconnect-percent 20 --disconnect-at 15 --disconnect-seconds 5 --output-stem /home/ubuntu/liverecall-baseline/t4 --quiet-server
+.venv/bin/python -u run_demo.py --clients 20 --duration 20 --runs 1 --source-segments 16 --output-stem /home/ubuntu/liverecall-baseline/supplemental_t1_headroom --quiet-server
+.venv/bin/python -u run_demo.py --clients 100 --duration 60 --runs 1 --source-segments 55 --disconnect-percent 20 --disconnect-at 15 --disconnect-seconds 5 --output-stem /home/ubuntu/liverecall-baseline/supplemental_t4_headroom --quiet-server
+
+Prescribed runs retain supplied defaults: seed 3103, source start delay 1 s,
+history_seconds 30, fresh threshold 500 ms. T1 has 22 source segments;
+T3/T4 each have 76. Supplemental runs deliberately reduce only segment count
+using the supported --source-segments argument; they do not replace required tests.
+
+RESULTS
+
+Prescribed T1 smoke test
+  Runs saved: 1
+  P50 caption age: 3.59 ms
+  P95 caption age: 6.41 ms
+  P99 caption age: 8.84 ms
+  Fresh Caption Ratio: 100.00 %
+  Fresh Final Caption Ratio: 95.45 %
+  Final completeness: 95.45 %
+  Normal Update Coverage (supplied metric): 98.48 %
+  Normal-reader P95: 6.41 ms
+  duplicates, by run: [0]
+  stale, by run: [0]
+  connection_errors, by run: [0]
+  recovered_history_items, by run: [0]
+
+Prescribed T3, median of 3 independent runs
+  Runs saved: 3
+  P50 caption age: 10.32 ms
+  P95 caption age: 3571.31 ms
+  P99 caption age: 21545.63 ms
+  Fresh Caption Ratio: 94.29 %
+  Fresh Final Caption Ratio: 78.16 %
+  Final completeness: 82.89 %
+  Normal Update Coverage (supplied metric): 83.03 %
+  Normal-reader P95: 17.34 ms
+  Slow-reader P95: 24794.69 ms
+  duplicates, by run: [0, 0, 0]
+  stale, by run: [0, 0, 0]
+  connection_errors, by run: [0, 0, 0]
+  recovered_history_items, by run: [0, 0, 0]
+
+Prescribed T4, median of 3 independent runs
+  Runs saved: 3
+  P50 caption age: 8.97 ms
+  P95 caption age: 16.41 ms
+  P99 caption age: 20.40 ms
+  Fresh Caption Ratio: 100.00 %
+  Fresh Final Caption Ratio: 83.95 %
+  Final completeness: 83.95 %
+  Normal Update Coverage (supplied metric): 84.47 %
+  Normal-reader P95: 16.41 ms
+  Recovery P95: 1.76 ms
+  duplicates, by run: [0, 0, 0]
+  stale, by run: [0, 0, 0]
+  connection_errors, by run: [0, 0, 0]
+  recovered_history_items, by run: [0, 0, 0]
+
+Supplemental T1 with source headroom, 1 run
+  Runs saved: 1
+  P50 caption age: 3.82 ms
+  P95 caption age: 7.26 ms
+  P99 caption age: 8.36 ms
+  Fresh Caption Ratio: 100.00 %
+  Fresh Final Caption Ratio: 100.00 %
+  Final completeness: 100.00 %
+  Normal Update Coverage (supplied metric): 100.00 %
+  Normal-reader P95: 7.26 ms
+  duplicates, by run: [0]
+  stale, by run: [0]
+  connection_errors, by run: [0]
+  recovered_history_items, by run: [0]
+
+Supplemental T4 with source headroom, 1 run
+  Runs saved: 1
+  P50 caption age: 9.24 ms
+  P95 caption age: 16.69 ms
+  P99 caption age: 20.01 ms
+  Fresh Caption Ratio: 100.00 %
+  Fresh Final Caption Ratio: 97.82 %
+  Final completeness: 97.82 %
+  Normal Update Coverage (supplied metric): 97.94 %
+  Normal-reader P95: 16.69 ms
+  Recovery P95: 5.59 ms
+  duplicates, by run: [0]
+  stale, by run: [0]
+  connection_errors, by run: [0]
+  recovered_history_items, by run: [0]
+
+INTERPRETATION AND LIMITS
+1. The starter sends empty HISTORY, so it cannot recover missed captions.
+   A short HISTORY-response latency is not successful recovery.
+2. The prescribed T1 capture ends with all 20 clients holding finals 1-21
+   and only revisions 1-2 of segment 22. Its console logs client capture
+   completion before SOURCE_DONE confirms all 22 segments were generated.
+   Source timestamp spacing exceeds the runner's nominal 0.75 s/segment
+   estimate on this host/VM. Thus some generated finals fall outside the
+   client capture window; the deficit must not be described as proven
+   network packet loss or attributed entirely to the server.
+3. T3/T4 prescribed runs have the same nominal-cadence risk. T3 additionally
+   shows substantial lag among deliberately slow readers. Keep normal/slow
+   metrics separate and investigate capture completeness before conclusions.
+4. Supplemental source limits add capture headroom without modifying public
+   code. They are one-run diagnostic checks, not three-run report evidence.
+   Supplemental T1 delivers all 16 finals to every client. In supplemental
+   T4, all 80 uninterrupted clients receive 55/55 finals, while all 20
+   reconnecting clients receive 49/55. This isolates six missed finals per
+   reconnecting client with no recovery, beyond the capture-cutoff issue.
+5. Use identical commands, runtime versions, resource conditions and source
+   limits for any before/after comparison. Retain prescribed T1-T5 results;
+   do not silently substitute the supplemental workloads.
+6. No T2/T5 results, bandwidth-overload experiment, completed application,
+   memory-bound proof, final deliverables, or submission are claimed here.
+
+Evidence ZIP contains untouched CSV/JSON outputs, console logs, environment
+and netem/startup validation, plus this summary.
