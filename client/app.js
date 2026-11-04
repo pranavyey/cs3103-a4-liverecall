@@ -10,6 +10,13 @@
  * Resume cursor = the highest (segment, revision) FINAL we hold. Provisional
  * updates never move it, so a reconnect asks only for finals we really lack.
  *
+ * Recall age: source_ts comes from the source machine's clock, which may differ
+ * from the browser's. clockOffset is the smallest (browser now - source_ts) seen
+ * on a live update, so it is the clock difference plus the lowest one-way delay.
+ * All local age checks use source_ts + clockOffset. HISTORY items are old by
+ * nature, so they never set the offset. Until a live update arrives the offset is
+ * unknown: recall assumes clocks agree and age pruning waits.
+ *
  * Optional URL parameters: ?server=ws://host:8765&session=L1
  */
 
@@ -34,6 +41,7 @@ let cursor = { segment: 0, revision: 0 };
 let ws = null;
 let retryMs = RECONNECT_MIN_MS;
 let reconnectTimer = null;
+let clockOffset = null;             // seconds; browser clock minus source clock
 let recallSeconds = null;           // null = recall panel closed
 const stats = { applied: 0, ignored: 0, recovered: 0, reconnects: 0 };
 
@@ -50,6 +58,17 @@ function clientId() {
 function setStatus(state, text) {
   statusEl.className = state;
   statusEl.textContent = text || state;
+}
+
+function observeClock(sourceTs) {
+  if (!Number.isFinite(sourceTs)) return;
+  const offset = Date.now() / 1000 - sourceTs;
+  if (clockOffset === null || offset < clockOffset) clockOffset = offset;
+}
+
+// source_ts expressed on the browser's clock.
+function localTs(entry) {
+  return entry.source_ts + (clockOffset ?? 0);
 }
 
 function isNewerCursor(seg, rev) {
@@ -107,7 +126,7 @@ function render(entry) {
 function prune() {
   const cutoff = Date.now() / 1000 - KEEP_SECONDS;
   for (const [seg, e] of segments) {
-    if ((e.final && e.source_ts < cutoff) || segments.size > MAX_LOCAL_SEGMENTS) segments.delete(seg);
+    if ((clockOffset !== null && e.final && localTs(e) < cutoff) || segments.size > MAX_LOCAL_SEGMENTS) segments.delete(seg);
   }
 }
 
@@ -118,7 +137,7 @@ function showRecall() {
   if (recallSeconds === null) { recallEl.innerHTML = ""; return; }
   const cutoff = Date.now() / 1000 - recallSeconds;
   const finals = [...segments.values()]
-    .filter((e) => e.final && e.source_ts >= cutoff)
+    .filter((e) => e.final && localTs(e) >= cutoff)
     .sort((a, b) => a.segment - b.segment);
   recallEl.innerHTML = "";
   const h = document.createElement("h2");
@@ -184,6 +203,7 @@ function connect() {
     let msg;
     try { msg = JSON.parse(event.data); } catch { return; }
     if (msg.type === "CAPTION_UPDATE") {
+      if (msg.session === SESSION) observeClock(msg.source_ts);
       apply(msg);
     } else if (msg.type === "HISTORY" && Array.isArray(msg.items)) {
       // Oldest first; apply() drops anything we already hold.
