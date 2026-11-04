@@ -27,7 +27,7 @@ chmod +x network_profiles/*.sh
   uname -a
   grep PRETTY_NAME /etc/os-release
   python --version
-  pip freeze
+  pip freeze 2>/dev/null || uv pip freeze 2>/dev/null || python -m pip freeze
   echo "qdisc before runs: $(tc qdisc show dev lo)"
 } > "$OUT/environment.txt" 2>&1
 

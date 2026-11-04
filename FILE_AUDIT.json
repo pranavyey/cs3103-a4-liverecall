@@ -105,6 +105,321 @@
       "state": "active",
       "submission": "include",
       "purpose": "Preserve raw core-validation CSV/JSON, tests, environment hashes, and exact-commit provenance."
+    },
+    {
+      "path": "CONTRIBUTIONS.md",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Required contribution statement."
+    },
+    {
+      "path": "README.md",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Required setup, usage, test and demo instructions."
+    },
+    {
+      "path": "report.pdf",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Required technical report, rendered from report/report.html."
+    },
+    {
+      "path": "report/report.html",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Source of report.pdf."
+    },
+    {
+      "path": "client/index.html",
+      "change": "modified",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Browser client page: live revisions, 15/30/60 s recall, reconnect UI."
+    },
+    {
+      "path": "client/app.js",
+      "change": "modified",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Browser client logic: in-place revision replacement, local final history, resume cursor, reconnect with backoff."
+    },
+    {
+      "path": "tests/browser_e2e.js",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Headless-browser test: two tabs plus a late joiner."
+    },
+    {
+      "path": "tools/run_official.sh",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Runs the official T1 to T5 set and supplemental runs; resets lo on exit."
+    },
+    {
+      "path": "tools/stress_reconnect.py",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Repeated-reconnect and reconnect-storm stress test."
+    },
+    {
+      "path": "experiments/official/candidate-1/SUMMARY.txt",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Official run summary (recomputed cut-off count)."
+    },
+    {
+      "path": "experiments/official/candidate-1/SUMMARY_original.txt",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Summary as first written, before the cut-off count fix."
+    },
+    {
+      "path": "experiments/official/candidate-1/commands.txt",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Exact commands of the official runs."
+    },
+    {
+      "path": "experiments/official/candidate-1/csv_and_json.tar.gz",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Raw per-run CSV/JSON of the official runs."
+    },
+    {
+      "path": "experiments/official/candidate-1/environment.txt",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "VM environment of the official runs."
+    },
+    {
+      "path": "experiments/official/candidate-1/official-run.txt",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Console output of the official run."
+    },
+    {
+      "path": "experiments/official/candidate-1/unit_tests.txt",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Unit test output on the VM before the official runs."
+    },
+    {
+      "path": "EXECUTION_STATUS.md",
+      "change": "added",
+      "state": "active",
+      "submission": "exclude",
+      "purpose": "Internal progress tracker; omit from the submission ZIP."
+    },
+    {
+      "path": "report_dump.md",
+      "change": "added",
+      "state": "active",
+      "submission": "exclude",
+      "purpose": "Raw report notes; omit from the submission ZIP."
+    },
+    {
+      "path": "experiments/official/candidate-1/t1.log",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Server and harness output of one official test on the Multipass VM (3 runs)."
+    },
+    {
+      "path": "experiments/official/candidate-1/t1_supp.log",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Server and harness output of one official test on the Multipass VM (3 runs)."
+    },
+    {
+      "path": "experiments/official/candidate-1/t2.log",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Server and harness output of one official test on the Multipass VM (3 runs)."
+    },
+    {
+      "path": "experiments/official/candidate-1/t2_supp.log",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Server and harness output of one official test on the Multipass VM (3 runs)."
+    },
+    {
+      "path": "experiments/official/candidate-1/t3.log",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Server and harness output of one official test on the Multipass VM (3 runs)."
+    },
+    {
+      "path": "experiments/official/candidate-1/t3_supp.log",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Server and harness output of one official test on the Multipass VM (3 runs)."
+    },
+    {
+      "path": "experiments/official/candidate-1/t4.log",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Server and harness output of one official test on the Multipass VM (3 runs)."
+    },
+    {
+      "path": "experiments/official/candidate-1/t4_supp.log",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Server and harness output of one official test on the Multipass VM (3 runs)."
+    },
+    {
+      "path": "experiments/official/candidate-1/t5.log",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Server and harness output of one official test on the Multipass VM (3 runs)."
+    },
+    {
+      "path": "experiments/official/candidate-1/t5_bw_supp.log",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Server and harness output of one official test on the Multipass VM (3 runs)."
+    },
+    {
+      "path": "experiments/official/candidate-1/t5_supp.log",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Server and harness output of one official test on the Multipass VM (3 runs)."
+    },
+    {
+      "path": "experiments/official/candidate-1-utm/SUMMARY.txt",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Official run summary on the UTM VM."
+    },
+    {
+      "path": "experiments/official/candidate-1-utm/commands.txt",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Exact commands of the UTM official runs."
+    },
+    {
+      "path": "experiments/official/candidate-1-utm/csv_and_json.tar.gz",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Raw per-run CSV/JSON of the UTM official runs."
+    },
+    {
+      "path": "experiments/official/candidate-1-utm/environment.txt",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "UTM VM environment of the official runs."
+    },
+    {
+      "path": "experiments/official/candidate-1-utm/unit_tests.txt",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Unit test output on the UTM VM before the official runs."
+    },
+    {
+      "path": "experiments/official/candidate-1-utm/t1.log",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Server and harness output of one official test on the UTM VM (3 runs)."
+    },
+    {
+      "path": "experiments/official/candidate-1-utm/t1_supp.log",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Server and harness output of one official test on the UTM VM (3 runs)."
+    },
+    {
+      "path": "experiments/official/candidate-1-utm/t2.log",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Server and harness output of one official test on the UTM VM (3 runs)."
+    },
+    {
+      "path": "experiments/official/candidate-1-utm/t2_supp.log",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Server and harness output of one official test on the UTM VM (3 runs)."
+    },
+    {
+      "path": "experiments/official/candidate-1-utm/t3.log",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Server and harness output of one official test on the UTM VM (3 runs)."
+    },
+    {
+      "path": "experiments/official/candidate-1-utm/t3_supp.log",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Server and harness output of one official test on the UTM VM (3 runs)."
+    },
+    {
+      "path": "experiments/official/candidate-1-utm/t4.log",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Server and harness output of one official test on the UTM VM (3 runs)."
+    },
+    {
+      "path": "experiments/official/candidate-1-utm/t4_supp.log",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Server and harness output of one official test on the UTM VM (3 runs)."
+    },
+    {
+      "path": "experiments/official/candidate-1-utm/t5.log",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Server and harness output of one official test on the UTM VM (3 runs)."
+    },
+    {
+      "path": "experiments/official/candidate-1-utm/t5_bw_supp.log",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Server and harness output of one official test on the UTM VM (3 runs)."
+    },
+    {
+      "path": "experiments/official/candidate-1-utm/t5_supp.log",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Server and harness output of one official test on the UTM VM (3 runs)."
     }
   ]
 }

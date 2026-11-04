@@ -1,0 +1,236 @@
+LiveRecall listening on ws://0.0.0.0:8765
+Starting 100 clients; slow=0, disconnecting=0, late=0
+opening handshake failed
+Traceback (most recent call last):
+  File "/home/ubuntu/lr-candidate-1/venv/lib/python3.12/site-packages/websockets/http11.py", line 138, in parse
+    request_line = yield from parse_line(read_line)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/lr-candidate-1/venv/lib/python3.12/site-packages/websockets/http11.py", line 320, in parse_line
+    line = yield from read_line(MAX_LINE_LENGTH)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/lr-candidate-1/venv/lib/python3.12/site-packages/websockets/streams.py", line 46, in read_line
+    raise EOFError(f"stream ends after {p} bytes, before end of line")
+EOFError: stream ends after 0 bytes, before end of line
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/ubuntu/lr-candidate-1/venv/lib/python3.12/site-packages/websockets/server.py", line 547, in parse
+    request = yield from Request.parse(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/lr-candidate-1/venv/lib/python3.12/site-packages/websockets/http11.py", line 140, in parse
+    raise EOFError("connection closed while reading HTTP request line") from exc
+EOFError: connection closed while reading HTTP request line
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/ubuntu/lr-candidate-1/venv/lib/python3.12/site-packages/websockets/asyncio/server.py", line 356, in conn_handler
+    await connection.handshake(
+  File "/home/ubuntu/lr-candidate-1/venv/lib/python3.12/site-packages/websockets/asyncio/server.py", line 207, in handshake
+    raise self.protocol.handshake_exc
+websockets.exceptions.InvalidMessage: did not receive a valid HTTP request
+Source connected: L1
+SOURCE_DONE: emitted 49 finalized segments
+Source disconnected; session history retained
+CLIENT_STATS client=127.0.0.1:50284 coalesced=2 slow_trips=0 resyncs=0
+CLIENT_STATS client=127.0.0.1:50190 coalesced=2 slow_trips=0 resyncs=0
+CLIENT_STATS client=127.0.0.1:50730 coalesced=2 slow_trips=0 resyncs=0
+Results written to /home/ubuntu/lr-candidate-1/official/candidate-1/t5_run01.csv
+LiveRecall listening on ws://0.0.0.0:8765
+Starting 100 clients; slow=0, disconnecting=0, late=0
+opening handshake failed
+Traceback (most recent call last):
+  File "/home/ubuntu/lr-candidate-1/venv/lib/python3.12/site-packages/websockets/http11.py", line 138, in parse
+    request_line = yield from parse_line(read_line)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/lr-candidate-1/venv/lib/python3.12/site-packages/websockets/http11.py", line 320, in parse_line
+    line = yield from read_line(MAX_LINE_LENGTH)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/lr-candidate-1/venv/lib/python3.12/site-packages/websockets/streams.py", line 46, in read_line
+    raise EOFError(f"stream ends after {p} bytes, before end of line")
+EOFError: stream ends after 0 bytes, before end of line
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/ubuntu/lr-candidate-1/venv/lib/python3.12/site-packages/websockets/server.py", line 547, in parse
+    request = yield from Request.parse(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/lr-candidate-1/venv/lib/python3.12/site-packages/websockets/http11.py", line 140, in parse
+    raise EOFError("connection closed while reading HTTP request line") from exc
+EOFError: connection closed while reading HTTP request line
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/ubuntu/lr-candidate-1/venv/lib/python3.12/site-packages/websockets/asyncio/server.py", line 356, in conn_handler
+    await connection.handshake(
+  File "/home/ubuntu/lr-candidate-1/venv/lib/python3.12/site-packages/websockets/asyncio/server.py", line 207, in handshake
+    raise self.protocol.handshake_exc
+websockets.exceptions.InvalidMessage: did not receive a valid HTTP request
+Source connected: L1
+SOURCE_DONE: emitted 49 finalized segments
+Source disconnected; session history retained
+CLIENT_STATS client=127.0.0.1:53388 coalesced=1 slow_trips=0 resyncs=0
+CLIENT_STATS client=127.0.0.1:53660 coalesced=1 slow_trips=0 resyncs=0
+CLIENT_STATS client=127.0.0.1:53626 coalesced=2 slow_trips=0 resyncs=0
+CLIENT_STATS client=127.0.0.1:53464 coalesced=1 slow_trips=0 resyncs=0
+CLIENT_STATS client=127.0.0.1:53096 coalesced=1 slow_trips=0 resyncs=0
+CLIENT_STATS client=127.0.0.1:53170 coalesced=2 slow_trips=0 resyncs=0
+CLIENT_STATS client=127.0.0.1:53656 coalesced=1 slow_trips=0 resyncs=0
+CLIENT_STATS client=127.0.0.1:53316 coalesced=2 slow_trips=0 resyncs=0
+CLIENT_STATS client=127.0.0.1:53314 coalesced=1 slow_trips=0 resyncs=0
+CLIENT_STATS client=127.0.0.1:53688 coalesced=2 slow_trips=0 resyncs=0
+Results written to /home/ubuntu/lr-candidate-1/official/candidate-1/t5_run02.csv
+LiveRecall listening on ws://0.0.0.0:8765
+opening handshake failed
+Traceback (most recent call last):
+  File "/home/ubuntu/lr-candidate-1/venv/lib/python3.12/site-packages/websockets/http11.py", line 138, in parse
+    request_line = yield from parse_line(read_line)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/lr-candidate-1/venv/lib/python3.12/site-packages/websockets/http11.py", line 320, in parse_line
+    line = yield from read_line(MAX_LINE_LENGTH)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/lr-candidate-1/venv/lib/python3.12/site-packages/websockets/streams.py", line 46, in read_line
+    raise EOFError(f"stream ends after {p} bytes, before end of line")
+EOFError: stream ends after 0 bytes, before end of line
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/ubuntu/lr-candidate-1/venv/lib/python3.12/site-packages/websockets/server.py", line 547, in parse
+    request = yield from Request.parse(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/lr-candidate-1/venv/lib/python3.12/site-packages/websockets/http11.py", line 140, in parse
+    raise EOFError("connection closed while reading HTTP request line") from exc
+EOFError: connection closed while reading HTTP request line
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/ubuntu/lr-candidate-1/venv/lib/python3.12/site-packages/websockets/asyncio/server.py", line 356, in conn_handler
+    await connection.handshake(
+  File "/home/ubuntu/lr-candidate-1/venv/lib/python3.12/site-packages/websockets/asyncio/server.py", line 207, in handshake
+    raise self.protocol.handshake_exc
+websockets.exceptions.InvalidMessage: did not receive a valid HTTP request
+Starting 100 clients; slow=0, disconnecting=0, late=0
+opening handshake failed
+Traceback (most recent call last):
+  File "/home/ubuntu/lr-candidate-1/venv/lib/python3.12/site-packages/websockets/http11.py", line 138, in parse
+    request_line = yield from parse_line(read_line)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/lr-candidate-1/venv/lib/python3.12/site-packages/websockets/http11.py", line 320, in parse_line
+    line = yield from read_line(MAX_LINE_LENGTH)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/lr-candidate-1/venv/lib/python3.12/site-packages/websockets/streams.py", line 46, in read_line
+    raise EOFError(f"stream ends after {p} bytes, before end of line")
+EOFError: stream ends after 0 bytes, before end of line
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/ubuntu/lr-candidate-1/venv/lib/python3.12/site-packages/websockets/server.py", line 547, in parse
+    request = yield from Request.parse(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/lr-candidate-1/venv/lib/python3.12/site-packages/websockets/http11.py", line 140, in parse
+    raise EOFError("connection closed while reading HTTP request line") from exc
+EOFError: connection closed while reading HTTP request line
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/ubuntu/lr-candidate-1/venv/lib/python3.12/site-packages/websockets/asyncio/server.py", line 356, in conn_handler
+    await connection.handshake(
+  File "/home/ubuntu/lr-candidate-1/venv/lib/python3.12/site-packages/websockets/asyncio/server.py", line 207, in handshake
+    raise self.protocol.handshake_exc
+websockets.exceptions.InvalidMessage: did not receive a valid HTTP request
+Source connected: L1
+SOURCE_DONE: emitted 49 finalized segments
+Source disconnected; session history retained
+CLIENT_STATS client=127.0.0.1:60964 coalesced=1 slow_trips=0 resyncs=0
+CLIENT_STATS client=127.0.0.1:33354 coalesced=2 slow_trips=0 resyncs=0
+CLIENT_STATS client=127.0.0.1:32924 coalesced=1 slow_trips=0 resyncs=0
+CLIENT_STATS client=127.0.0.1:33004 coalesced=3 slow_trips=0 resyncs=0
+Results written to /home/ubuntu/lr-candidate-1/official/candidate-1/t5_run03.csv
+
+=== Run 1/3 ===
+Clients=100, duration=40.0s, source segments=49
+LiveRecall Results
+==================
+Clients observed:              100
+Live caption messages:         14694
+Recovered history items:       0
+Accepted messages:             14694
+Recovered messages:            0
+Duplicate messages observed:   0
+Stale messages observed:       0
+P50 caption age:               252.70 ms
+P95 caption age:               645.19 ms
+P99 caption age:               843.56 ms
+Fresh Caption Ratio (<=500 ms): 90.70%
+Fresh Final Caption Ratio (<=500 ms): 93.61%
+Successful connections:        100
+Connection errors:             0
+Unique final captions:         4900/4900
+Final-caption completeness:    100.00%
+Unique live revisions:         14694/14700
+Normal Update Coverage:        99.96%
+
+=== Run 2/3 ===
+Clients=100, duration=40.0s, source segments=49
+LiveRecall Results
+==================
+Clients observed:              100
+Live caption messages:         14677
+Recovered history items:       3
+Accepted messages:             14677
+Recovered messages:            3
+Duplicate messages observed:   0
+Stale messages observed:       0
+P50 caption age:               261.01 ms
+P95 caption age:               909.24 ms
+P99 caption age:               1147.89 ms
+Fresh Caption Ratio (<=500 ms): 83.55%
+Fresh Final Caption Ratio (<=500 ms): 82.90%
+Successful connections:        100
+Connection errors:             0
+Unique final captions:         4900/4900
+Final-caption completeness:    100.00%
+Unique live revisions:         14677/14700
+Normal Update Coverage:        99.84%
+
+=== Run 3/3 ===
+Clients=100, duration=40.0s, source segments=49
+LiveRecall Results
+==================
+Clients observed:              100
+Live caption messages:         14690
+Recovered history items:       1
+Accepted messages:             14690
+Recovered messages:            1
+Duplicate messages observed:   0
+Stale messages observed:       0
+P50 caption age:               251.95 ms
+P95 caption age:               549.98 ms
+P99 caption age:               796.15 ms
+Fresh Caption Ratio (<=500 ms): 93.69%
+Fresh Final Caption Ratio (<=500 ms): 91.69%
+Successful connections:        100
+Connection errors:             0
+Unique final captions:         4900/4900
+Final-caption completeness:    100.00%
+Unique live revisions:         14690/14700
+Normal Update Coverage:        99.93%
+
+=== Median across independent runs ===
+P50 caption age                   252.70 ms
+P95 caption age                   645.19 ms
+P99 caption age                   843.56 ms
+Fresh Caption Ratio                90.70 %
+Fresh Final Caption Ratio          91.69 %
+Final completeness                100.00 %
+Normal Update Coverage             99.93 %
+Normal-client P95                 645.19 ms
+
+Public run complete. CSV and JSON result files were written beside run_demo.py.

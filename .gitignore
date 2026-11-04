@@ -16,3 +16,5 @@ __pycache__/
 # Temporary runtime files; experiment CSV/JSON remains trackable
 *.log
 tmp/
+experiments/mac-local/
+!experiments/official/**/*.log

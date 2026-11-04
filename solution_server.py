@@ -130,6 +130,7 @@ class SessionState:
         # First appearances have increasing segment IDs in the source contract.
         # Keep this scalar after eviction so an old segment cannot resurrect.
         self.highest_segment_seen = 0
+        self.evicted = 0   # open segments dropped at the active-segment bound
 
     def prune(self, now: float | None = None) -> None:
         now = time.monotonic() if now is None else now
@@ -158,9 +159,20 @@ class SessionState:
         if not caption.final:
             next_active_bytes += caption.size
             next_active_count = len(self.active) + (0 if previous else 1)
-            if (next_active_count > MAX_ACTIVE_ITEMS
+            # Over capacity: evict the oldest other open segment rather than
+            # refuse the source. If nothing else is left to evict, this one
+            # revision alone is too large: drop it and keep the previous one.
+            while (next_active_count > MAX_ACTIVE_ITEMS
                     or next_active_bytes > MAX_ACTIVE_BYTES):
-                raise OverflowError("Active segment capacity exceeded")
+                others = [seg for seg in self.active if seg != caption.segment]
+                if not others:
+                    return None
+                oldest = min(others)
+                evicted = self.active.pop(oldest)
+                self.active_bytes -= evicted.size
+                next_active_bytes -= evicted.size
+                next_active_count -= 1
+                self.evicted += 1
 
         self.highest_segment_seen = max(self.highest_segment_seen, caption.segment)
         if caption.final:
@@ -424,9 +436,6 @@ class LiveRecallServer:
                     caption = state.accept(message)
                 except (ValueError, UnicodeError, TypeError):
                     continue
-                except OverflowError:
-                    await ws.close(code=1013, reason="Active segment capacity exceeded")
-                    break
                 if caption is None:
                     continue
                 for client in tuple(self.clients):
@@ -437,6 +446,8 @@ class LiveRecallServer:
                     await asyncio.sleep(0)
         finally:
             self.source = None
+            if state.evicted:
+                print(f"ACTIVE_EVICTED segments={state.evicted}", flush=True)
             print("Source disconnected; session history retained", flush=True)
 
     async def handle_client(self, ws: Any, state: SessionState,

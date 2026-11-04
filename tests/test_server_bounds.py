@@ -118,33 +118,57 @@ class ServerBoundTests(unittest.TestCase):
             server.client_resume(
                 {"last_segment": 0, "last_revision": 0, "history_seconds": -1})
 
-    def test_active_item_limit_rejects_new_work_without_corrupting_existing_state(self):
+    def test_active_item_limit_evicts_oldest_open_segment_and_keeps_going(self):
         with patch.object(server, "MAX_ACTIVE_ITEMS", 2):
             self.state.accept(self.caption(1, final=False))
             self.state.accept(self.caption(2, final=False))
-            with self.assertRaises(OverflowError):
-                self.state.accept(self.caption(3, final=False))
-            self.assertEqual(self.snapshot_segments(), ([], [1, 2]))
+            # Segment 1 is never finalised; a third open segment evicts it.
+            self.assertIsNotNone(self.state.accept(self.caption(3, final=False)))
+            self.assertEqual(self.snapshot_segments(), ([], [2, 3]))
+            self.assertEqual(self.state.evicted, 1)
             self.assert_accounting_consistent()
-            # Finishing a segment frees capacity; rejected state wasn't admitted.
-            self.state.accept(self.caption(1, revision=2))
-            self.state.accept(self.caption(3, final=False))
-            self.assertEqual(self.snapshot_segments(), ([1], [2, 3]))
+            # Later finals still arrive; the evicted segment cannot come back.
+            self.assertIsNone(self.state.accept(self.caption(1, revision=2)))
+            self.assertIsNotNone(self.state.accept(self.caption(2, revision=2)))
+            self.assertIsNotNone(self.state.accept(self.caption(3, revision=2)))
+            self.assertIsNotNone(self.state.accept(self.caption(4)))
+            self.assertEqual(self.snapshot_segments(), ([2, 3, 4], []))
             self.assert_accounting_consistent()
 
-    def test_active_byte_limit_rejects_large_revision_then_allows_finalization(self):
-        first = self.caption(1, final=False, text="draft")
-        initial_size = server.Caption.from_message(first, "L1").size
-        with patch.object(server, "MAX_ACTIVE_BYTES", initial_size + 10):
-            self.state.accept(first)
-            with self.assertRaises(OverflowError):
-                self.state.accept(self.caption(1, revision=2, final=False,
-                                               text="x" * 1000))
-            _, active = self.state.snapshot((0, 0), 60)
-            self.assertEqual([(item.segment, item.revision) for item in active], [(1, 1)])
+    def test_abandoned_segments_never_block_finals(self):
+        # A source that leaves many segments open must not stop later finals.
+        with patch.object(server, "MAX_ACTIVE_ITEMS", 4):
+            for segment in range(1, 51):
+                self.state.accept(self.caption(segment, final=False))
+                self.assertLessEqual(len(self.state.active), 4)
+            for segment in range(51, 61):
+                self.assertIsNotNone(self.state.accept(self.caption(segment)))
+            finals, active = self.state.snapshot((0, 0), 60)
+            self.assertEqual([item.segment for item in finals], list(range(51, 61)))
+            self.assertEqual([item.segment for item in active], [47, 48, 49, 50])
+            self.assertEqual(self.state.evicted, 46)
             self.assert_accounting_consistent()
-            self.state.accept(self.caption(1, revision=3, text="final text"))
-            self.assertEqual(self.snapshot_segments(), ([1], []))
+
+    def test_active_byte_limit_evicts_other_segments_for_a_large_revision(self):
+        first = self.caption(1, final=False, text="draft")
+        second = self.caption(2, final=False, text="draft")
+        size = server.Caption.from_message(first, "L1").size
+        with patch.object(server, "MAX_ACTIVE_BYTES", size + 1100):
+            self.state.accept(first)
+            self.state.accept(second)
+            self.assertIsNotNone(self.state.accept(
+                self.caption(2, revision=2, final=False, text="x" * 1000)))
+            _, active = self.state.snapshot((0, 0), 60)
+            self.assertEqual([(item.segment, item.revision) for item in active], [(2, 2)])
+            self.assertLessEqual(self.state.active_bytes, size + 1100)
+            self.assert_accounting_consistent()
+            # A revision too large even alone is dropped; the old one stays.
+            self.assertIsNone(self.state.accept(
+                self.caption(2, revision=3, final=False, text="x" * 5000)))
+            _, active = self.state.snapshot((0, 0), 60)
+            self.assertEqual([(item.segment, item.revision) for item in active], [(2, 2)])
+            self.state.accept(self.caption(2, revision=4, text="final text"))
+            self.assertEqual(self.snapshot_segments(), ([2], []))
             self.assertEqual(self.state.active_bytes, 0)
             self.assert_accounting_consistent()
 

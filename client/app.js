@@ -16,7 +16,7 @@
 const params = new URLSearchParams(location.search);
 const WS_URL = params.get("server") || `ws://${location.hostname || "127.0.0.1"}:8765`;
 const SESSION = params.get("session") || "L1";
-const KEEP_SECONDS = 90;            // local final history, comfortably above 60 s
+const KEEP_SECONDS = 70;            // local final history: 60 s recall plus a 10 s margin, same as the server
 const MAX_LOCAL_SEGMENTS = 2000;    // hard bound on local state
 const LIVE_ROWS = 40;               // rows kept on screen
 const RECONNECT_MIN_MS = 500;

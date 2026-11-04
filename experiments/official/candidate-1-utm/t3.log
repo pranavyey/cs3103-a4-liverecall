@@ -1,0 +1,295 @@
+LiveRecall listening on ws://0.0.0.0:8765
+opening handshake failed
+Traceback (most recent call last):
+  File "/home/pranav/lr-candidate-1/venv/lib/python3.12/site-packages/websockets/http11.py", line 138, in parse
+    request_line = yield from parse_line(read_line)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pranav/lr-candidate-1/venv/lib/python3.12/site-packages/websockets/http11.py", line 320, in parse_line
+    line = yield from read_line(MAX_LINE_LENGTH)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pranav/lr-candidate-1/venv/lib/python3.12/site-packages/websockets/streams.py", line 46, in read_line
+    raise EOFError(f"stream ends after {p} bytes, before end of line")
+EOFError: stream ends after 0 bytes, before end of line
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/pranav/lr-candidate-1/venv/lib/python3.12/site-packages/websockets/server.py", line 547, in parse
+    request = yield from Request.parse(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pranav/lr-candidate-1/venv/lib/python3.12/site-packages/websockets/http11.py", line 140, in parse
+    raise EOFError("connection closed while reading HTTP request line") from exc
+EOFError: connection closed while reading HTTP request line
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/pranav/lr-candidate-1/venv/lib/python3.12/site-packages/websockets/asyncio/server.py", line 356, in conn_handler
+    await connection.handshake(
+  File "/home/pranav/lr-candidate-1/venv/lib/python3.12/site-packages/websockets/asyncio/server.py", line 207, in handshake
+    raise self.protocol.handshake_exc
+websockets.exceptions.InvalidMessage: did not receive a valid HTTP request
+Starting 100 clients; slow=10, disconnecting=0, late=0
+Source connected: L1
+SLOW_MODE_ENTER client=127.0.0.1:59854 hold=15.0s pong=5730ms late_for=5.7s
+SLOW_MODE_ENTER client=127.0.0.1:59954 hold=15.0s pong=5725ms late_for=5.7s
+SLOW_MODE_ENTER client=127.0.0.1:59860 hold=15.0s pong=5724ms late_for=5.7s
+SLOW_MODE_ENTER client=127.0.0.1:60446 hold=15.0s pong=5723ms late_for=5.7s
+SLOW_MODE_ENTER client=127.0.0.1:60680 hold=15.0s pong=5722ms late_for=5.7s
+SLOW_MODE_ENTER client=127.0.0.1:60562 hold=15.0s pong=5722ms late_for=5.7s
+SLOW_MODE_ENTER client=127.0.0.1:60464 hold=15.0s pong=5721ms late_for=5.7s
+SLOW_MODE_ENTER client=127.0.0.1:60578 hold=15.0s pong=5721ms late_for=5.7s
+SLOW_MODE_ENTER client=127.0.0.1:59998 hold=15.0s pong=5722ms late_for=5.7s
+SLOW_MODE_ENTER client=127.0.0.1:60288 hold=15.0s pong=5719ms late_for=5.7s
+SLOW_MODE_ENTER client=127.0.0.1:59854 hold=30.0s pong=5677ms late_for=5.7s
+SLOW_MODE_ENTER client=127.0.0.1:59954 hold=30.0s pong=5673ms late_for=5.7s
+SLOW_MODE_ENTER client=127.0.0.1:59860 hold=30.0s pong=5673ms late_for=5.7s
+SLOW_MODE_ENTER client=127.0.0.1:60446 hold=30.0s pong=5671ms late_for=5.7s
+SLOW_MODE_ENTER client=127.0.0.1:60680 hold=30.0s pong=5670ms late_for=5.7s
+SLOW_MODE_ENTER client=127.0.0.1:60562 hold=30.0s pong=5670ms late_for=5.7s
+SLOW_MODE_ENTER client=127.0.0.1:60464 hold=30.0s pong=5671ms late_for=5.7s
+SLOW_MODE_ENTER client=127.0.0.1:60578 hold=30.0s pong=5671ms late_for=5.7s
+SLOW_MODE_ENTER client=127.0.0.1:59998 hold=30.0s pong=5671ms late_for=5.7s
+SLOW_MODE_ENTER client=127.0.0.1:60288 hold=30.0s pong=5667ms late_for=5.7s
+SOURCE_DONE: emitted 76 finalized segments
+Source disconnected; session history retained
+CLIENT_STATS client=127.0.0.1:59854 coalesced=108 slow_trips=2 resyncs=0
+CLIENT_STATS client=127.0.0.1:59954 coalesced=108 slow_trips=2 resyncs=0
+CLIENT_STATS client=127.0.0.1:59860 coalesced=108 slow_trips=2 resyncs=0
+CLIENT_STATS client=127.0.0.1:60446 coalesced=108 slow_trips=2 resyncs=0
+CLIENT_STATS client=127.0.0.1:60680 coalesced=108 slow_trips=2 resyncs=0
+CLIENT_STATS client=127.0.0.1:60562 coalesced=108 slow_trips=2 resyncs=0
+Results written to /home/pranav/lr-candidate-1/official/candidate-1-utm/t3_run01.csv
+CLIENT_STATS client=127.0.0.1:60464 coalesced=108 slow_trips=2 resyncs=0
+CLIENT_STATS client=127.0.0.1:60578 coalesced=108 slow_trips=2 resyncs=0
+CLIENT_STATS client=127.0.0.1:59998 coalesced=108 slow_trips=2 resyncs=0
+CLIENT_STATS client=127.0.0.1:60288 coalesced=108 slow_trips=2 resyncs=0
+LiveRecall listening on ws://0.0.0.0:8765
+opening handshake failed
+Traceback (most recent call last):
+  File "/home/pranav/lr-candidate-1/venv/lib/python3.12/site-packages/websockets/http11.py", line 138, in parse
+    request_line = yield from parse_line(read_line)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pranav/lr-candidate-1/venv/lib/python3.12/site-packages/websockets/http11.py", line 320, in parse_line
+    line = yield from read_line(MAX_LINE_LENGTH)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pranav/lr-candidate-1/venv/lib/python3.12/site-packages/websockets/streams.py", line 46, in read_line
+    raise EOFError(f"stream ends after {p} bytes, before end of line")
+EOFError: stream ends after 0 bytes, before end of line
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/pranav/lr-candidate-1/venv/lib/python3.12/site-packages/websockets/server.py", line 547, in parse
+    request = yield from Request.parse(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pranav/lr-candidate-1/venv/lib/python3.12/site-packages/websockets/http11.py", line 140, in parse
+    raise EOFError("connection closed while reading HTTP request line") from exc
+EOFError: connection closed while reading HTTP request line
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/pranav/lr-candidate-1/venv/lib/python3.12/site-packages/websockets/asyncio/server.py", line 356, in conn_handler
+    await connection.handshake(
+  File "/home/pranav/lr-candidate-1/venv/lib/python3.12/site-packages/websockets/asyncio/server.py", line 207, in handshake
+    raise self.protocol.handshake_exc
+websockets.exceptions.InvalidMessage: did not receive a valid HTTP request
+Starting 100 clients; slow=10, disconnecting=0, late=0
+Source connected: L1
+SLOW_MODE_ENTER client=127.0.0.1:45412 hold=15.0s pong=5772ms late_for=5.8s
+SLOW_MODE_ENTER client=127.0.0.1:45066 hold=15.0s pong=5768ms late_for=5.8s
+SLOW_MODE_ENTER client=127.0.0.1:44934 hold=15.0s pong=5768ms late_for=5.8s
+SLOW_MODE_ENTER client=127.0.0.1:44948 hold=15.0s pong=5766ms late_for=5.8s
+SLOW_MODE_ENTER client=127.0.0.1:45600 hold=15.0s pong=5765ms late_for=5.8s
+SLOW_MODE_ENTER client=127.0.0.1:45726 hold=15.0s pong=5764ms late_for=5.8s
+SLOW_MODE_ENTER client=127.0.0.1:45736 hold=15.0s pong=5763ms late_for=5.8s
+SLOW_MODE_ENTER client=127.0.0.1:45842 hold=15.0s pong=5763ms late_for=5.8s
+SLOW_MODE_ENTER client=127.0.0.1:45136 hold=15.0s pong=5763ms late_for=5.8s
+SLOW_MODE_ENTER client=127.0.0.1:45610 hold=15.0s pong=5761ms late_for=5.8s
+SLOW_MODE_ENTER client=127.0.0.1:45412 hold=30.0s pong=5687ms late_for=5.7s
+SLOW_MODE_ENTER client=127.0.0.1:45066 hold=30.0s pong=5684ms late_for=5.7s
+SLOW_MODE_ENTER client=127.0.0.1:44934 hold=30.0s pong=5684ms late_for=5.7s
+SLOW_MODE_ENTER client=127.0.0.1:44948 hold=30.0s pong=5682ms late_for=5.7s
+SLOW_MODE_ENTER client=127.0.0.1:45600 hold=30.0s pong=5682ms late_for=5.7s
+SLOW_MODE_ENTER client=127.0.0.1:45726 hold=30.0s pong=5681ms late_for=5.7s
+SLOW_MODE_ENTER client=127.0.0.1:45736 hold=30.0s pong=5680ms late_for=5.7s
+SLOW_MODE_ENTER client=127.0.0.1:45842 hold=30.0s pong=5682ms late_for=5.7s
+SLOW_MODE_ENTER client=127.0.0.1:45136 hold=30.0s pong=5682ms late_for=5.7s
+SLOW_MODE_ENTER client=127.0.0.1:45610 hold=30.0s pong=5681ms late_for=5.7s
+Source disconnected; session history retainedSOURCE_DONE: emitted 76 finalized segments
+
+CLIENT_STATS client=127.0.0.1:45412 coalesced=108 slow_trips=2 resyncs=0
+CLIENT_STATS client=127.0.0.1:45066 coalesced=108 slow_trips=2 resyncs=0
+CLIENT_STATS client=127.0.0.1:44934 coalesced=108 slow_trips=2 resyncs=0
+CLIENT_STATS client=127.0.0.1:44948 coalesced=108 slow_trips=2 resyncs=0
+CLIENT_STATS client=127.0.0.1:45600 coalesced=108 slow_trips=2 resyncs=0
+Results written to /home/pranav/lr-candidate-1/official/candidate-1-utm/t3_run02.csv
+CLIENT_STATS client=127.0.0.1:45726 coalesced=108 slow_trips=2 resyncs=0
+CLIENT_STATS client=127.0.0.1:45736 coalesced=108 slow_trips=2 resyncs=0
+CLIENT_STATS client=127.0.0.1:45842 coalesced=108 slow_trips=2 resyncs=0
+CLIENT_STATS client=127.0.0.1:45136 coalesced=108 slow_trips=2 resyncs=0
+CLIENT_STATS client=127.0.0.1:45610 coalesced=108 slow_trips=2 resyncs=0
+LiveRecall listening on ws://0.0.0.0:8765
+opening handshake failed
+Traceback (most recent call last):
+  File "/home/pranav/lr-candidate-1/venv/lib/python3.12/site-packages/websockets/http11.py", line 138, in parse
+    request_line = yield from parse_line(read_line)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pranav/lr-candidate-1/venv/lib/python3.12/site-packages/websockets/http11.py", line 320, in parse_line
+    line = yield from read_line(MAX_LINE_LENGTH)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pranav/lr-candidate-1/venv/lib/python3.12/site-packages/websockets/streams.py", line 46, in read_line
+    raise EOFError(f"stream ends after {p} bytes, before end of line")
+EOFError: stream ends after 0 bytes, before end of line
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/pranav/lr-candidate-1/venv/lib/python3.12/site-packages/websockets/server.py", line 547, in parse
+    request = yield from Request.parse(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pranav/lr-candidate-1/venv/lib/python3.12/site-packages/websockets/http11.py", line 140, in parse
+    raise EOFError("connection closed while reading HTTP request line") from exc
+EOFError: connection closed while reading HTTP request line
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/pranav/lr-candidate-1/venv/lib/python3.12/site-packages/websockets/asyncio/server.py", line 356, in conn_handler
+    await connection.handshake(
+  File "/home/pranav/lr-candidate-1/venv/lib/python3.12/site-packages/websockets/asyncio/server.py", line 207, in handshake
+    raise self.protocol.handshake_exc
+websockets.exceptions.InvalidMessage: did not receive a valid HTTP request
+Starting 100 clients; slow=10, disconnecting=0, late=0
+Source connected: L1
+SLOW_MODE_ENTER client=127.0.0.1:52798 hold=15.0s pong=5731ms late_for=5.7s
+SLOW_MODE_ENTER client=127.0.0.1:52394 hold=15.0s pong=5731ms late_for=5.7s
+SLOW_MODE_ENTER client=127.0.0.1:52508 hold=15.0s pong=5728ms late_for=5.7s
+SLOW_MODE_ENTER client=127.0.0.1:53110 hold=15.0s pong=5727ms late_for=5.7s
+SLOW_MODE_ENTER client=127.0.0.1:52406 hold=15.0s pong=5726ms late_for=5.7s
+SLOW_MODE_ENTER client=127.0.0.1:53120 hold=15.0s pong=5726ms late_for=5.7s
+SLOW_MODE_ENTER client=127.0.0.1:52988 hold=15.0s pong=5725ms late_for=5.7s
+SLOW_MODE_ENTER client=127.0.0.1:53236 hold=15.0s pong=5725ms late_for=5.7s
+SLOW_MODE_ENTER client=127.0.0.1:52538 hold=15.0s pong=5725ms late_for=5.7s
+SLOW_MODE_ENTER client=127.0.0.1:53004 hold=15.0s pong=5724ms late_for=5.7s
+SLOW_MODE_ENTER client=127.0.0.1:52798 hold=30.0s pong=5686ms late_for=5.7s
+SLOW_MODE_ENTER client=127.0.0.1:52394 hold=30.0s pong=5686ms late_for=5.7s
+SLOW_MODE_ENTER client=127.0.0.1:52508 hold=30.0s pong=5681ms late_for=5.7s
+SLOW_MODE_ENTER client=127.0.0.1:53110 hold=30.0s pong=5680ms late_for=5.7s
+SLOW_MODE_ENTER client=127.0.0.1:52406 hold=30.0s pong=5680ms late_for=5.7s
+SLOW_MODE_ENTER client=127.0.0.1:53120 hold=30.0s pong=5681ms late_for=5.7s
+SLOW_MODE_ENTER client=127.0.0.1:52988 hold=30.0s pong=5680ms late_for=5.7s
+SLOW_MODE_ENTER client=127.0.0.1:53236 hold=30.0s pong=5680ms late_for=5.7s
+SLOW_MODE_ENTER client=127.0.0.1:52538 hold=30.0s pong=5680ms late_for=5.7s
+SLOW_MODE_ENTER client=127.0.0.1:53004 hold=30.0s pong=5679ms late_for=5.7s
+SOURCE_DONE: emitted 76 finalized segmentsSource disconnected; session history retained
+
+CLIENT_STATS client=127.0.0.1:52798 coalesced=108 slow_trips=2 resyncs=0
+CLIENT_STATS client=127.0.0.1:52394 coalesced=108 slow_trips=2 resyncs=0
+CLIENT_STATS client=127.0.0.1:52508 coalesced=108 slow_trips=2 resyncs=0
+CLIENT_STATS client=127.0.0.1:53110 coalesced=108 slow_trips=2 resyncs=0
+CLIENT_STATS client=127.0.0.1:52406 coalesced=108 slow_trips=2 resyncs=0
+Results written to /home/pranav/lr-candidate-1/official/candidate-1-utm/t3_run03.csv
+CLIENT_STATS client=127.0.0.1:53120 coalesced=108 slow_trips=2 resyncs=0
+CLIENT_STATS client=127.0.0.1:52988 coalesced=108 slow_trips=2 resyncs=0
+CLIENT_STATS client=127.0.0.1:53236 coalesced=108 slow_trips=2 resyncs=0
+CLIENT_STATS client=127.0.0.1:52538 coalesced=108 slow_trips=2 resyncs=0
+CLIENT_STATS client=127.0.0.1:53004 coalesced=108 slow_trips=2 resyncs=0
+
+=== Run 1/3 ===
+Clients=100, duration=60.0s, source segments=76
+LiveRecall Results
+==================
+Clients observed:              100
+Live caption messages:         21700
+Recovered history items:       0
+Accepted messages:             21700
+Recovered messages:            0
+Duplicate messages observed:   0
+Stale messages observed:       0
+P50 caption age:               6.85 ms
+P95 caption age:               2247.65 ms
+P99 caption age:               7950.47 ms
+Fresh Caption Ratio (<=500 ms): 94.65%
+Fresh Final Caption Ratio (<=500 ms): 90.00%
+Successful connections:        100
+Connection errors:             0
+Unique final captions:         7580/7600
+Final-caption completeness:    99.74%
+Unique live revisions:         21700/22800
+Normal Update Coverage:        95.18%
+
+Slow-reader isolation
+---------------------
+Normal clients: P50=6.16 ms, P95=16.81 ms, Fresh=100.00% (20520 msgs)
+Slow clients:   P50=5589.14 ms, P95=8933.26 ms, Fresh=1.69% (1180 msgs)
+
+=== Run 2/3 ===
+Clients=100, duration=60.0s, source segments=76
+LiveRecall Results
+==================
+Clients observed:              100
+Live caption messages:         21700
+Recovered history items:       0
+Accepted messages:             21700
+Recovered messages:            0
+Duplicate messages observed:   0
+Stale messages observed:       0
+P50 caption age:               7.41 ms
+P95 caption age:               2260.89 ms
+P99 caption age:               7951.20 ms
+Fresh Caption Ratio (<=500 ms): 94.65%
+Fresh Final Caption Ratio (<=500 ms): 90.00%
+Successful connections:        100
+Connection errors:             0
+Unique final captions:         7580/7600
+Final-caption completeness:    99.74%
+Unique live revisions:         21700/22800
+Normal Update Coverage:        95.18%
+
+Slow-reader isolation
+---------------------
+Normal clients: P50=6.69 ms, P95=16.68 ms, Fresh=100.00% (20520 msgs)
+Slow clients:   P50=5599.01 ms, P95=8926.72 ms, Fresh=1.69% (1180 msgs)
+
+=== Run 3/3 ===
+Clients=100, duration=60.0s, source segments=76
+LiveRecall Results
+==================
+Clients observed:              100
+Live caption messages:         21700
+Recovered history items:       0
+Accepted messages:             21700
+Recovered messages:            0
+Duplicate messages observed:   0
+Stale messages observed:       0
+P50 caption age:               7.26 ms
+P95 caption age:               2254.46 ms
+P99 caption age:               7956.65 ms
+Fresh Caption Ratio (<=500 ms): 94.65%
+Fresh Final Caption Ratio (<=500 ms): 90.00%
+Successful connections:        100
+Connection errors:             0
+Unique final captions:         7580/7600
+Final-caption completeness:    99.74%
+Unique live revisions:         21700/22800
+Normal Update Coverage:        95.18%
+
+Slow-reader isolation
+---------------------
+Normal clients: P50=6.56 ms, P95=16.56 ms, Fresh=100.00% (20520 msgs)
+Slow clients:   P50=5587.76 ms, P95=8923.74 ms, Fresh=1.69% (1180 msgs)
+
+=== Median across independent runs ===
+P50 caption age                     7.26 ms
+P95 caption age                  2254.46 ms
+P99 caption age                  7951.20 ms
+Fresh Caption Ratio                94.65 %
+Fresh Final Caption Ratio          90.00 %
+Final completeness                 99.74 %
+Normal Update Coverage             95.18 %
+Normal-client P95                  16.68 ms
+Slow-client P95                  8926.72 ms
+
+Public run complete. CSV and JSON result files were written beside run_demo.py.
