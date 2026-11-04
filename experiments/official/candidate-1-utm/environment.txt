@@ -1,0 +1,8 @@
+label: candidate-1-utm
+date: 2026-11-04T10:25:13+00:00
+host: liverecall  cpus: 2
+Linux liverecall 7.0.0-42-generic #42-Ubuntu SMP PREEMPT_DYNAMIC Thu Oct 15 08:19:15 UTC 2026 aarch64 GNU/Linux
+PRETTY_NAME="Ubuntu 26.04.1 LTS"
+Python 3.12.16
+./tools/run_official.sh: line 30: pip: command not found
+qdisc before runs: qdisc noqueue 0: root refcnt 2 

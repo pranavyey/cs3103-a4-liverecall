@@ -1,0 +1,158 @@
+================ t1
+runs: 3, cut off (results before SOURCE_DONE): 0
+SLOW_MODE_ENTER lines: 0  clients: 0
+duplicates by run: 0 0 0   stale by run: 0 0 0 
+=== Median across independent runs ===
+P50 caption age                     4.42 ms
+P95 caption age                     6.73 ms
+P99 caption age                     7.79 ms
+Fresh Caption Ratio               100.00 %
+Fresh Final Caption Ratio         100.00 %
+Final completeness                100.00 %
+Normal Update Coverage            100.00 %
+Normal-client P95                   6.73 ms
+
+================ t2
+runs: 3, cut off (results before SOURCE_DONE): 0
+SLOW_MODE_ENTER lines: 0  clients: 0
+duplicates by run: 0 0 0   stale by run: 0 0 0 
+=== Median across independent runs ===
+P50 caption age                    11.63 ms
+P95 caption age                    19.04 ms
+P99 caption age                    21.16 ms
+Fresh Caption Ratio               100.00 %
+Fresh Final Caption Ratio         100.00 %
+Final completeness                100.00 %
+Normal Update Coverage            100.00 %
+Normal-client P95                  19.04 ms
+
+================ t3
+runs: 3, cut off (results before SOURCE_DONE): 0
+SLOW_MODE_ENTER lines: 60  clients: 30
+duplicates by run: 0 0 0   stale by run: 0 0 0 
+=== Median across independent runs ===
+P50 caption age                     7.26 ms
+P95 caption age                  2254.46 ms
+P99 caption age                  7951.20 ms
+Fresh Caption Ratio                94.65 %
+Fresh Final Caption Ratio          90.00 %
+Final completeness                 99.74 %
+Normal Update Coverage             95.18 %
+Normal-client P95                  16.68 ms
+Slow-client P95                  8926.72 ms
+
+================ t4
+runs: 3, cut off (results before SOURCE_DONE): 0
+SLOW_MODE_ENTER lines: 0  clients: 0
+duplicates by run: 0 0 0   stale by run: 0 0 0 
+=== Median across independent runs ===
+P50 caption age                    11.69 ms
+P95 caption age                    18.07 ms
+P99 caption age                    19.97 ms
+Fresh Caption Ratio               100.00 %
+Fresh Final Caption Ratio          98.63 %
+Final completeness                100.00 %
+Normal Update Coverage             98.42 %
+Normal-client P95                  18.07 ms
+Recovery P95                        5.52 ms
+
+================ t5
+runs: 3, cut off (results before SOURCE_DONE): 0
+SLOW_MODE_ENTER lines: 0  clients: 0
+duplicates by run: 0 0 0   stale by run: 0 0 0 
+=== Median across independent runs ===
+P50 caption age                   267.82 ms
+P95 caption age                   681.91 ms
+P99 caption age                   954.70 ms
+Fresh Caption Ratio                88.93 %
+Fresh Final Caption Ratio          85.94 %
+Final completeness                100.00 %
+Normal Update Coverage             99.88 %
+Normal-client P95                 681.91 ms
+
+================ t1_supp
+runs: 3, cut off (results before SOURCE_DONE): 0
+SLOW_MODE_ENTER lines: 0  clients: 0
+duplicates by run: 0 0 0   stale by run: 0 0 0 
+=== Median across independent runs ===
+P50 caption age                     4.57 ms
+P95 caption age                     6.58 ms
+P99 caption age                     7.10 ms
+Fresh Caption Ratio               100.00 %
+Fresh Final Caption Ratio         100.00 %
+Final completeness                100.00 %
+Normal Update Coverage            100.00 %
+Normal-client P95                   6.58 ms
+
+================ t2_supp
+runs: 3, cut off (results before SOURCE_DONE): 0
+SLOW_MODE_ENTER lines: 0  clients: 0
+duplicates by run: 0 0 0   stale by run: 0 0 0 
+=== Median across independent runs ===
+P50 caption age                    11.87 ms
+P95 caption age                    19.07 ms
+P99 caption age                    20.92 ms
+Fresh Caption Ratio               100.00 %
+Fresh Final Caption Ratio         100.00 %
+Final completeness                100.00 %
+Normal Update Coverage            100.00 %
+Normal-client P95                  19.07 ms
+
+================ t3_supp
+runs: 3, cut off (results before SOURCE_DONE): 0
+SLOW_MODE_ENTER lines: 60  clients: 30
+duplicates by run: 0 0 0   stale by run: 0 0 0 
+=== Median across independent runs ===
+P50 caption age                     8.66 ms
+P95 caption age                  2954.73 ms
+P99 caption age                  8166.75 ms
+Fresh Caption Ratio                94.08 %
+Fresh Final Caption Ratio          90.00 %
+Final completeness                100.00 %
+Normal Update Coverage             95.78 %
+Normal-client P95                  17.11 ms
+Slow-client P95                  8936.67 ms
+
+================ t4_supp
+runs: 3, cut off (results before SOURCE_DONE): 0
+SLOW_MODE_ENTER lines: 0  clients: 0
+duplicates by run: 0 0 0   stale by run: 0 0 0 
+=== Median across independent runs ===
+P50 caption age                    12.01 ms
+P95 caption age                    18.29 ms
+P99 caption age                    19.82 ms
+Fresh Caption Ratio               100.00 %
+Fresh Final Caption Ratio          98.33 %
+Final completeness                100.00 %
+Normal Update Coverage             98.00 %
+Normal-client P95                  18.29 ms
+Recovery P95                        4.47 ms
+
+================ t5_supp
+runs: 3, cut off (results before SOURCE_DONE): 0
+SLOW_MODE_ENTER lines: 0  clients: 0
+duplicates by run: 0 0 0   stale by run: 0 0 0 
+=== Median across independent runs ===
+P50 caption age                   261.71 ms
+P95 caption age                   633.00 ms
+P99 caption age                   805.53 ms
+Fresh Caption Ratio                91.57 %
+Fresh Final Caption Ratio          87.51 %
+Final completeness                100.00 %
+Normal Update Coverage             99.88 %
+Normal-client P95                 633.00 ms
+
+================ t5_bw_supp
+runs: 3, cut off (results before SOURCE_DONE): 0
+SLOW_MODE_ENTER lines: 0  clients: 0
+duplicates by run: 0 0 0   stale by run: 0 0 0 
+=== Median across independent runs ===
+P50 caption age                    16.75 ms
+P95 caption age                    51.59 ms
+P99 caption age                    57.58 ms
+Fresh Caption Ratio               100.00 %
+Fresh Final Caption Ratio         100.00 %
+Final completeness                100.00 %
+Normal Update Coverage            100.00 %
+Normal-client P95                  51.59 ms
+

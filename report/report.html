@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>LiveRecall - CS3103 Assignment 4 Report</title>
+<style>
+  @page { size: A4; margin: 17mm 17mm 17mm 17mm; }
+  body { font-family: "Times New Roman", Times, serif; font-size: 10.5pt; line-height: 1.32; color: #111; }
+  h1 { font-size: 16pt; margin: 0 0 2pt 0; }
+  .meta { font-size: 9.5pt; color: #333; margin-bottom: 8pt; }
+  h2 { font-size: 12pt; margin: 10pt 0 3pt 0; border-bottom: 0.6pt solid #888; }
+  h3 { font-size: 10.5pt; margin: 7pt 0 2pt 0; }
+  p { margin: 3pt 0; text-align: justify; }
+  ul, ol { margin: 2pt 0 3pt 0; padding-left: 16pt; }
+  li { margin: 1pt 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 8.8pt; margin: 4pt 0; }
+  th, td { border: 0.5pt solid #999; padding: 1.5pt 3pt; text-align: right; }
+  th { background: #eee; }
+  td:first-child, th:first-child, table.l td, table.l th { text-align: left; }
+  .cap { font-size: 8.8pt; color: #333; margin: 1pt 0 5pt 0; }
+  code { font-family: Menlo, Consolas, monospace; font-size: 8.8pt; }
+  .fig { font-family: Menlo, Consolas, monospace; font-size: 8pt; white-space: pre; border: 0.5pt solid #bbb; padding: 4pt; margin: 4pt 0; line-height: 1.2; }
+  .appendix { page-break-before: always; }
+</style>
+</head>
+<body>
+
+<h1>LiveRecall: revision-aware caption delivery with bounded recovery</h1>
+<div class="meta">CS3103 Assignment 4 &middot; Pranav Mahatma (A0281778L) &middot; Final code: tag <code>final-2</code> (server identical to <code>candidate-2</code>) &middot; Official numbers: Ubuntu VM (UTM), median of 3 runs</div>
+
+<h2>1. Architecture and protocol</h2>
+<p>The server (<code>solution_server.py</code>) is a single Python 3.12 process running one asyncio event loop, using <code>websockets</code> 16.1.1. One <b>source</b> connection sends <code>SOURCE_HELLO</code>, then <code>CAPTION_UPDATE</code>s, then <code>SOURCE_DONE</code>. Many <b>viewers</b> connect with <code>CLIENT_HELLO</code>, which carries a resume cursor <code>(last_segment, last_revision)</code> and <code>history_seconds</code>. I kept the required message format unchanged.</p>
+<div class="fig">  caption_source ──► SessionState ──┬─► ClientSender 1 [bounded queue] ──► viewer 1
+                    • final history │   (one sender task per client;
+                      (70 s, bounded)├─► ClientSender 2   ping every 2 msgs,  ──► viewer 2
+                    • active segments│                    ≤2 unanswered)
+                    • highest seen   └─► ClientSender N ◄── pong timing → slow-mode decision</div>
+<ul>
+  <li><b>SessionState</b> holds the bounded final history, the latest revision of each active (not yet final) segment, and a high-water mark <code>highest_segment_seen</code>. The high-water mark means an evicted or retired segment can never come back.</li>
+  <li><b>ClientSender</b>: each viewer has its own bounded queue and one sender task. That task sends recovery and live updates in order. The source only appends to queues and never waits for a client, so a slow client cannot block the source or other viewers.</li>
+  <li><b>Encode once:</b> each update is serialised to JSON once, and the same string goes to every viewer. Large HISTORY replies are split into ordered frames under the client's 1 MiB message limit.</li>
+  <li><b>Validation:</b> caption fields, session names (including UTF-8 validity) and the whole resume request are checked before the client is bound to a session, so a malformed message cannot corrupt state.</li>
+  <li><b>Browser client</b> (<code>client/</code>): keeps one entry per segment and replaces it in place when a newer revision arrives (provisional in amber italic, final in black). It keeps finals locally for 70 s (at most 2000 segments, the same retention as the server) for the 15/30/60 s "What did I miss?" view (default 30 s). Its resume cursor is always the highest <i>final</i> it holds. It reconnects automatically with backoff from 0.5 to 5 s and asks for 60 s of history on every hello, so a late joiner gets a full view at once.</li>
+</ul>
+
+<h2>2. Revision and recovery semantics</h2>
+<ul>
+  <li><b>Revisions:</b> for an active segment, only a higher revision is accepted. Duplicates and older revisions are dropped. A final is immutable, so anything arriving for a segment after its final is ignored.</li>
+  <li><b>Recovery order:</b> on (re)connect the server sends HISTORY with only the finals newer than the client's cursor, oldest first, then the latest state of every active segment, then live updates. A client is never sent a final it already reported.</li>
+  <li><b>No-gap handoff:</b> the history/active snapshot and the registration of the client for live updates happen with <b>no <code>await</code> in between</b>. If an await sat between them, a final produced at that moment would be in neither the snapshot nor live delivery: a permanent gap. Registering first and taking the snapshot later would cause duplicates instead.</li>
+  <li><b>History window:</b> following the course clarification, a client may request up to 60 s. Longer requests are capped to 60 s, not rejected; negative values are rejected. Internally I keep 70 s, a margin for timing jitter at the boundary. When a client overflows its queue (Section 3), the server resyncs it with only the finals it has not yet been sent, looking back over the full 70 s retained.</li>
+</ul>
+<p><b>Evidence.</b> In a matched reconnect check (55 segments), every reconnecting client got 55/55 finals, against 49/55 for the starter, which sends an empty HISTORY. In the official T4 runs, 120 to 140 items were recovered through HISTORY per run, with recovery P95 5.11 ms and 0 duplicate or stale messages.</p>
+
+<h2>3. Backpressure and overload policy</h2>
+<p><b>Fixed bounds</b>, independent of lecture length and client speed:</p>
+<ul>
+  <li>History: 70 s, and also at most 32,768 items and 32 MiB.</li>
+  <li>Active (not yet final) segments: at most 128 items and 4 MiB. Over the limit, the server evicts the oldest open segment and keeps the source connected, so a source that never finalises some segments cannot block later finals. An evicted segment cannot come back (high-water mark). My first version closed the source connection here, which would have lost every later final; I changed it to eviction.</li>
+  <li>Per-client queue: soft limit 32 items or 256 KiB, hard limit 256 items or 2 MiB.</li>
+</ul>
+<p>The policy has four layers:</p>
+<ol>
+  <li><b>Coalescing.</b> When a client is behind (its oldest queued item is older than 0.5 s, or it has more than 32 queued), I compact its queue: provisionals that a newer queued revision of the same segment replaces are dropped. Finals and the newest revision of each segment stay, in order. A client that catches up gets every revision again.</li>
+  <li><b>Making the backlog visible.</b> My first version never coalesced in T3. The reason was that the kernel TCP buffers and the client library's 16-message receive queue absorbed the backlog, so the server's queue looked empty while the reader fell many seconds behind. My fix is a ping send window: the server sends a WebSocket ping every 2 messages and waits once 2 pings are unanswered. The backlog then builds in the server's queue, where obsolete revisions can still be dropped.</li>
+  <li><b>Slow mode (finals only).</b> If a client's pongs show it has not read for at least 3 s, it is sent finals only for 15 s. The hold doubles each time it trips again, up to 120 s. Its newest provisional stays queued and is sent when the hold ends. A 500 ms reader can keep up with finals alone (about one per 0.75 s), so finals still arrive during the lecture rather than after it.</li>
+  <li><b>Hard limit.</b> If a queue still exceeds 256 items or 2 MiB, it is cleared and the client is resynchronised from shared history, starting after the last final it was sent. The client is not disconnected and loses no finals within the retention window.</li>
+</ol>
+<p>This matches the course's guidance on graceful overload: finals are never dropped to make room for provisionals, the newest revision of each segment is kept, and no queue grows without bound.</p>
+
+<h3>3.1 The slow-mode trigger (four measured versions)</h3>
+<p>Getting the trigger right was the main engineering problem, because T3 (slow readers) and T5 (lossy link) pull it in opposite directions. In T5, WebSocket runs over TCP, so a lost packet blocks everything behind it until it is retransmitted (head-of-line blocking). The retransmission wait doubles each time (about 0.2, 0.4, 0.8 s), so several pongs from a <i>healthy</i> client can arrive late together. In T3, a trace of a 500 ms reader showed fast pongs for about 8 s while the buffers filled, then about 5.5 s of silence, then two late pongs at once.</p>
+<table class="l">
+<tr><th>Version (commit)</th><th>Rule</th><th>T5: normal clients wrongly in slow mode</th><th>T3: slow readers caught</th></tr>
+<tr><td>1</td><td>one pong later than 1 s</td><td>not measured</td><td>yes</td></tr>
+<tr><td>2 (bb50641)</td><td>two consecutive late pongs</td><td>19 / 100</td><td>yes</td></tr>
+<tr><td>3a (2c0f320)</td><td>late pongs spanning 3 s, timed from pong <i>arrival</i></td><td>&ndash;</td><td><b>no</b> (broke T3)</td></tr>
+<tr><td>3b (d3142fa)</td><td>same, timed from ping <i>sent</i> (<code>now &minus; latency</code>)</td><td>1 (an edge case)</td><td>yes</td></tr>
+<tr><td>4 final (405da57)</td><td>streak measured only up to the latest late pong</td><td>1 (a real 4.0 s pong); <b>0 in all 3 official runs</b></td><td>all 10 at 6.0 s</td></tr>
+</table>
+<p class="cap">Table 1. Each change was driven by a VM measurement (one dev T5 run each, 100 clients).</p>
+<p>A pong with latency L proves the client did not read for at least L seconds, so I time a streak from when the ping was sent. Time passing <i>after</i> the latest late pong proves nothing. Counting it let a 2.2 s pong plus a fast pong 0.9 s later add up to 3.1 s and trip slow mode. I rejected simply raising a single-pong threshold to about 2.5 s: one pong cannot tell "stopped reading" from an unlucky retransmission, and because retransmission waits double, a harsher link crosses any fixed value.</p>
+
+<h2>4. Public experiments</h2>
+<p><b>Setup.</b> Ubuntu 26.04.1 LTS VM (UTM with Apple Virtualization on a Mac host; ARM64, 2 CPUs, 4 GB RAM), Python 3.12.16, websockets 16.1.1. Server and clients both ran inside the VM, with <code>tc/netem</code> on <code>lo</code>. I used the unmodified harness with the spec's commands, 3 independent runs per test, and report the median. All runs were scripted by <code>tools/run_official.sh</code>. All 33 runs had <b>0 duplicate and 0 stale messages</b>, and <b>none of the 15 prescribed runs was cut off</b> (Section 4.2). Raw logs, CSV/JSON and <code>SUMMARY.txt</code>: <code>experiments/official/candidate-2/</code> (server code unchanged in final tag <code>final-2</code>). I also ran the same set on <code>candidate-1</code> (<code>experiments/official/candidate-1-utm/</code>); every metric agreed within run-to-run noise (P95 within 3 ms outside T5, where tail noise is larger, the same slow-mode entries, 0 duplicate or stale), as expected, since the deterministic source never opens enough segments to reach the eviction path.</p>
+<table>
+<tr><th>Test</th><th>Final compl.</th><th>P50</th><th>P95</th><th>P99</th><th>Fresh (500 ms)</th><th>Fresh final</th><th>Coverage</th><th>Notes</th></tr>
+<tr><td>T1 20 cl., 20 s</td><td><b>100%</b></td><td>4.84 ms</td><td>7.32 ms</td><td>7.98 ms</td><td>100%</td><td>100%</td><td>100%</td><td style="text-align:left"></td></tr>
+<tr><td>T2 100 cl., 40 s</td><td><b>100%</b></td><td>12.20 ms</td><td>20.36 ms</td><td>23.26 ms</td><td>100%</td><td>100%</td><td>100%</td><td style="text-align:left"></td></tr>
+<tr><td>T3 10% slow 500 ms</td><td><b>99.61%</b></td><td>7.82 ms</td><td>2093 ms</td><td>7987 ms</td><td>94.70%</td><td>90.00%</td><td>95.13%</td><td style="text-align:left">normal P95 18.84 ms; slow P95 8926 ms</td></tr>
+<tr><td>T4 20% disconnect</td><td><b>100%</b></td><td>12.73 ms</td><td>20.00 ms</td><td>22.25 ms</td><td>100%</td><td>98.42%</td><td>98.42%</td><td style="text-align:left">recovery P95 5.11 ms; 120&ndash;140 recovered / run</td></tr>
+<tr><td>T5 delay_loss</td><td><b>100%</b></td><td>262.60 ms</td><td>704.96 ms</td><td>1029.82 ms</td><td>87.62%</td><td>85.90%</td><td>99.82%</td><td style="text-align:left">0 slow-mode entries</td></tr>
+<tr><td>Extra: T5 at 2 Mbit</td><td><b>100%</b></td><td>17.52 ms</td><td>52.55 ms</td><td>60.06 ms</td><td>100%</td><td>100%</td><td>100%</td><td style="text-align:left">38 segments; 0 slow-mode</td></tr>
+</table>
+<p class="cap">Table 2. Official results for <code>candidate-2</code>, prescribed spec commands, median of 3 runs (UTM VM). The 2 Mbit row is an extra test with <code>bandwidth_2mbit.sh</code>.</p>
+
+<h3>4.1 Interpretation</h3>
+<ul>
+  <li><b>T1/T2 (scale):</b> P50 rises from about 5 ms to about 12 ms going from 20 to 100 clients, because one event loop sends each update 100 times. P99 stays near 23 ms and everything is fresh.</li>
+  <li><b>T3 (slow clients):</b> normal clients are isolated from slow ones: P95 is 18.84 ms and fresh, about the same as T2. The overall P95/P99 is dominated by the 10% slow readers, whose lag (about 6 s at P50) is the client library's 16-message buffer (16 &times; 0.5 s &asymp; 8 s), which the server cannot see into. All 90 normal clients got every final in every run. The 0.39% missing is only <b>the last 2 to 4 finals (from segments 73 to 76) of each of the 10 slow readers</b>: they were sent, but were still waiting in the slow readers' buffers when the harness stopped recording about 3 s after the source's last final. With fewer segments (<code>--source-segments 60</code>), so the source ends earlier, T3 is 100%. Coverage below 100% is the slow readers' coalesced provisionals, the intended trade-off.</li>
+  <li><b>T4 (reconnect):</b> disconnected clients resume from their cursor and are sent only the missed finals (120 to 140 items per run), within about 5 ms at P95, with no duplicates.</li>
+  <li><b>T5 (impairment):</b> the 3% loss appears as <i>delay</i>, not missing data, because TCP retransmits. Finals stay at 100%. The ~120 ms netem delay applies in both directions on <code>lo</code>, a base round trip of about 240 ms, so P50 is near 263 ms. Retransmission with head-of-line blocking stretches the tail to about 700/1030 ms (P95/P99), and freshness falls to about 88% for the same reason. Under 2 Mbit, coalescing keeps P95 near 53 ms with full coverage.</li>
+</ul>
+
+<h3>4.2 Hypervisor timing and the capture cutoff</h3>
+<p>I first ran everything in a Multipass VM (Ubuntu 24.04.5, same CPU and memory). There, the prescribed T1 to T4 runs were all cut off: the harness wrote its results before the source sent <code>SOURCE_DONE</code>, so the last segments were never recorded, whatever the server did. I traced it to timer lag in the VM: each <code>asyncio.sleep(0.2)</code> in the source took 0.2517 s, and with three waits per segment a segment took about 0.905 s instead of the 0.75 s <code>run_demo.py</code> allows for. Even a single client on an idle VM reached only 84.21%, so it was the environment, not server load; the starter was cut off the same way. My TA advised changing the hypervisor, so I moved to UTM with Apple Virtualization and repeated the measurements:</p>
+<table>
+<tr><th>Measurement</th><th>Multipass VM</th><th>UTM VM (Apple Virtualization)</th></tr>
+<tr><td>Mean <code>asyncio.sleep(0.2)</code> (20 calls)</td><td>0.2517 s</td><td>0.2020 s</td></tr>
+<tr><td>Source time per segment (3 sleeps)</td><td>&asymp; 0.905 s</td><td>&asymp; 0.756 s</td></tr>
+<tr><td>1 client, 20 s, final completeness</td><td>84.21%</td><td>100% (22/22)</td></tr>
+<tr><td>Prescribed runs cut off (T1&ndash;T5, 3 each)</td><td>12 of 15 (all of T1&ndash;T4)</td><td>0 of 15</td></tr>
+<tr><td>Completeness T1 / T2 / T3 / T4</td><td>95.45 / 87.76 / 91.18 / 85.53%</td><td>100 / 100 / 99.74 / 100%</td></tr>
+<tr><td>T2 P95 / T4 recovery P95</td><td>21.47 ms / 4.88 ms</td><td>19.04 ms / 5.52 ms</td></tr>
+</table>
+<p class="cap">Table 3. Same code (<code>candidate-1</code>) and commands on both VMs. Multipass results: <code>experiments/official/candidate-1/</code>.</p>
+<p>The low completeness on Multipass was therefore entirely a measurement artefact: the server's delivery was unchanged, and latency was similar on both VMs. On Multipass I had also run supplemental tests with <code>--source-segments</code> so the source finished in time; all of them reached 100%, which matches what UTM now shows with the unmodified commands.</p>
+
+<h3>4.3 Additional stress tests (Multipass VM, one run each, commit b1961d3)</h3>
+<ul>
+  <li><b>Repeated reconnects</b> (<code>tools/stress_reconnect.py</code>, 100 clients &times; 60 segments). Random mode: 1111 connects, HISTORY P95 2.9 ms. Storm, with all clients reconnecting together every 4 s: 1500 connects, P95 16.1 ms. Both <b>100/100 complete, 0 duplicate, 0 stale</b>. The starter on the same script: 0/30 complete.</li>
+  <li><b>Boundedness:</b> 600 s with 100 clients and 10% slow readers. Server RSS was 32.3 MB at 1 min and 32.4 MB at 10 min (flat); 100% completeness.</li>
+  <li><b>Recovery after impairment:</b> delay_loss applied from 29 to 69 s of a 120 s run. Normal-client P95 was about 21 ms before, 0.5 to 1.0 s during, and <b>20.9 ms with 100% fresh in the first 10 s window after reset</b>, with no stale backlog drained afterwards.</li>
+</ul>
+
+<h2>5. Before/after comparison</h2>
+<p><b>Before</b> is the supplied starter (tag <code>starter-baseline</code>); <b>after</b> is <code>candidate-1</code>. Both use the same prescribed T3/T4 commands on the same Multipass VM, median of 3, so both are equally affected by its capture cutoff (Section 4.2); the comparison is between them, not against Table 2.</p>
+<table>
+<tr><th>Metric</th><th>Starter</th><th>Final</th><th>Change</th></tr>
+<tr><td>T3 final completeness</td><td>82.89%</td><td>91.18%</td><td>+8.3 pts</td></tr>
+<tr><td>T3 slow-reader P95 caption age</td><td>24.8 s</td><td>9.5 s</td><td>&minus;62%</td></tr>
+<tr><td>T3 overall P99 caption age</td><td>21.5 s</td><td>8.5 s</td><td>&minus;61%</td></tr>
+<tr><td>T3 normal-client P95</td><td>17.3 ms</td><td>20.1 ms</td><td>+2.8 ms (still 100% fresh)</td></tr>
+<tr><td>T4 final completeness</td><td>83.95%</td><td>85.53%</td><td>+1.6 pts</td></tr>
+<tr><td>T4 items recovered through HISTORY / run</td><td>0</td><td>120</td><td>recovery works</td></tr>
+<tr><td>T4 supplemental (no cutoff)</td><td>97.82% (55 seg., 1 run)</td><td>100%</td><td>no lost finals</td></tr>
+</table>
+<p class="cap">Table 4. Starter vs final design.</p>
+<p><b>Single optimisation disabled:</b> I compared coalescing plus the ping window against the bounded FIFO alone, on one T3 run in a dev container. Completeness went from 95.1% to 99.7%, and slow-reader P99 from 24.0 s to 8.1 s; normal P95 stayed under 14 ms in both. The trigger versions in Table 1 are a second ablation: on T5, normal clients wrongly in slow mode went 19 &rarr; 1 &rarr; 1, and coverage went 95.50% &rarr; 99.66% &rarr; 99.41%.</p>
+<p><b>Trade-off.</b> Slow readers receive fewer provisional revisions, and none while in slow mode. In exchange, their finals arrive about 2.6&times; sooner at P95 and nothing they need is lost. The ping window adds a control frame every 2 messages and slightly raises normal latency (about +3 ms at P95). The source's pacing was the same with 1 and 100 clients, so the overhead does not slow the stream.</p>
+
+<h2>6. Failures and trade-offs</h2>
+<ul>
+  <li><b>Hidden backlog:</b> my first coalescing design looked correct in unit tests but did nothing in T3, because buffers outside the server hid the lag. Finding out why coalescing never triggered exposed this, and it led to the ping window.</li>
+  <li><b>False slow-mode trips:</b> the two-late-pong rule passed T3 but put 19% of healthy T5 clients in slow mode. My first fix (3a) broke T3, because it reset on fast pongs and timed from arrival. I found each problem by running both T3 and T5 after every change, not only the test I was fixing.</li>
+  <li><b>Remaining T5 trip:</b> in one dev run a single healthy client returned a 4.0 s pong. It really did not read for 4 s, so under my definition it was unresponsive, and the cost was 15 s of finals only for that client. I accepted this; the official runs had 0 trips.</li>
+  <li><b>Rejected shortcut:</b> during development I was offered the idea of sending live finals to slow clients labelled as HISTORY. The harness processes HISTORY without the simulated slow-reader delay, so it would have improved the metric by exploiting the measurement and misusing what HISTORY means in the protocol. I rejected it (AI_USAGE.md).</li>
+  <li><b>Resync versus disconnect:</b> at the hard limit I resync from history instead of closing the socket. This costs one burst of finals but keeps the client's view complete, without a reconnect cycle.</li>
+</ul>
+
+<h2>7. Limitations</h2>
+<ol>
+  <li><b>Timing depends on the VM.</b> The harness assumes the source keeps 0.75 s per segment. Under Multipass it did not, and the prescribed runs were cut off (Section 4.2). My official numbers come from the UTM VM, where timing is accurate; I did not modify the harness.</li>
+  <li><b>Slow-reader lag floor</b> of about 6 s at P50 for a 500 ms reader, set by the client library's receive buffer, which the server cannot observe or drop from. At the end of T3 it shows as the last two finals still unread when capture stops.</li>
+  <li><b>Detection delay:</b> a slow reader is caught only after about 6 to 8 s, once the buffers outside the server fill.</li>
+  <li><b>Recovery window:</b> recovery is guaranteed only for absences up to 60 s (70 s retained). An open segment evicted at the active-segment bound loses its later final.</li>
+  <li><b>Scale:</b> a single process on a single core, with one session per instance and no persistence. All results come from VMs on one laptop with uncontrolled host activity.</li>
+</ol>
+
+<h2>8. Future work / FYP direction</h2>
+<ul>
+  <li>Measure reading speed directly with application-level acknowledgements, instead of inferring it from ping timing, and adapt the slow-mode threshold to each client's own round-trip time.</li>
+  <li>Use QUIC or WebTransport so that one lost packet does not block unrelated captions (no cross-stream head-of-line blocking), which addresses the T5 tail.</li>
+  <li>Fan out across processes or machines (pub/sub), with multiple sessions and persistent lecture history for revision after class.</li>
+  <li>Use live ASR as the caption source, plus per-student bookmarks and search over the recalled window: a natural FYP extension.</li>
+</ul>
+
+<div class="appendix">
+<h2>Appendix A. Reproduction and evidence</h2>
+<ul>
+  <li>Setup and exact commands: <code>README.md</code>. Official runs: <code>./tools/run_official.sh &lt;label&gt;</code>; UTM results in <code>experiments/official/candidate-2/</code> and <code>candidate-1-utm/</code>, Multipass results in <code>experiments/official/candidate-1/</code> (environment.txt, unit_tests.txt, SUMMARY.txt, per-test logs, csv_and_json.tar.gz).</li>
+  <li>Starter baseline: <code>experiments/baseline/</code>. Server-core reconnect check: <code>experiments/server-core/</code>.</li>
+  <li>Tests: 22 unit/integration tests (<code>python -m unittest discover tests</code>) and a headless-browser test with 2 tabs plus a late joiner (<code>tests/browser_e2e.js</code>).</li>
+  <li>Key commits: starter-baseline 80d08b8; server core 36ed410; browser client 30106e2; coalescing + ping window fbcb49f; slow-mode trigger bb50641 &rarr; 2c0f320 &rarr; d3142fa &rarr; 405da57; history cap 79c9720; tags candidate-1, candidate-2 (active-segment eviction, 70 s local retention) and final-2 (client-only: recall windows corrected for source/browser clock difference, 43d9fe6; server unchanged, so official results stand).</li>
+  <li>Server log lines: <code>SLOW_MODE_ENTER client=&hellip; hold=&hellip; pong=&hellip; late_for=&hellip;</code> and <code>CLIENT_STATS client=&hellip; coalesced=&hellip; slow_trips=&hellip; resyncs=&hellip;</code>.</li>
+  <li>Design rationale per stage: <code>DESIGN_NOTES.md</code>. AI tool use and corrections: <code>AI_USAGE.md</code>.</li>
+</ul>
+</div>
+
+</body>
+</html>

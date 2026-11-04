@@ -24,7 +24,8 @@ import websockets
 from websockets.exceptions import ConnectionClosed
 
 
-HISTORY_SECONDS = 60.0
+HISTORY_SECONDS = 60.0          # most history a client can request (spec: 60 s)
+HISTORY_RETAIN_SECONDS = 70.0   # kept internally: a margin for timing jitter
 MAX_HISTORY_ITEMS = 32_768
 MAX_HISTORY_BYTES = 32 * 1024 * 1024
 MAX_ACTIVE_ITEMS = 128
@@ -37,7 +38,8 @@ COALESCE_AFTER_SECONDS = 0.5
 PING_EVERY = 2
 MAX_UNANSWERED_PINGS = 2
 SLOW_PONG_SECONDS = 1.0
-SLOW_LATE_PONGS = 2
+SLOW_LATE_SECONDS = 3.0      # late pongs must persist this long to mean 'slow'
+SLOW_LATE_GAP_SECONDS = 1.0  # a gap this long with no late pong ends a streak
 SLOW_HOLD_SECONDS = 15.0
 SLOW_HOLD_MAX_SECONDS = 120.0
 MAX_MESSAGE_BYTES = 1024 * 1024
@@ -71,9 +73,11 @@ def client_resume(hello: dict[str, Any]) -> tuple[int, int, float]:
     segment, revision = hello.get("last_segment", 0), hello.get("last_revision", 0)
     seconds = hello.get("history_seconds", 30)
     if (not integer(segment) or not integer(revision)
-            or not finite_number(seconds) or not 0 <= seconds <= HISTORY_SECONDS):
+            or not finite_number(seconds) or seconds < 0):
         raise ValueError("Invalid resume cursor or history window")
-    return segment, revision, float(seconds)
+    # Older captions are not guaranteed, so a longer request is served up to
+    # the promised window instead of being rejected.
+    return segment, revision, float(min(seconds, HISTORY_SECONDS))
 
 
 @dataclass(frozen=True, slots=True)
@@ -126,11 +130,12 @@ class SessionState:
         # First appearances have increasing segment IDs in the source contract.
         # Keep this scalar after eviction so an old segment cannot resurrect.
         self.highest_segment_seen = 0
+        self.evicted = 0   # open segments dropped at the active-segment bound
 
     def prune(self, now: float | None = None) -> None:
         now = time.monotonic() if now is None else now
         while self.history and (
-            self.history[0].received_at < now - HISTORY_SECONDS
+            self.history[0].received_at < now - HISTORY_RETAIN_SECONDS
             or len(self.history) > MAX_HISTORY_ITEMS
             or self.history_bytes > MAX_HISTORY_BYTES
         ):
@@ -154,9 +159,20 @@ class SessionState:
         if not caption.final:
             next_active_bytes += caption.size
             next_active_count = len(self.active) + (0 if previous else 1)
-            if (next_active_count > MAX_ACTIVE_ITEMS
+            # Over capacity: evict the oldest other open segment rather than
+            # refuse the source. If nothing else is left to evict, this one
+            # revision alone is too large: drop it and keep the previous one.
+            while (next_active_count > MAX_ACTIVE_ITEMS
                     or next_active_bytes > MAX_ACTIVE_BYTES):
-                raise OverflowError("Active segment capacity exceeded")
+                others = [seg for seg in self.active if seg != caption.segment]
+                if not others:
+                    return None
+                oldest = min(others)
+                evicted = self.active.pop(oldest)
+                self.active_bytes -= evicted.size
+                next_active_bytes -= evicted.size
+                next_active_count -= 1
+                self.evicted += 1
 
         self.highest_segment_seen = max(self.highest_segment_seen, caption.segment)
         if caption.final:
@@ -239,7 +255,10 @@ class ClientSender:
         self.slow_until = 0.0
         self.slow_hold = SLOW_HOLD_SECONDS / 2
         self.slow_trips = 0
-        self.late_pongs = 0
+        self.late_since = 0.0         # first late pong of the current streak
+        self.last_late = float('-inf')  # most recent late pong
+        peer = getattr(ws, "remote_address", None)
+        self.label = f"{peer[0]}:{peer[1]}" if peer else hex(id(self))
 
     def _behind(self, now: float) -> bool:
         return (len(self.pending) > SOFT_PENDING_ITEMS
@@ -302,13 +321,31 @@ class ClientSender:
         # finals only for a hold time that doubles on each repeat, letting the
         # client's buffered backlog drain before provisionals resume.
         now = time.monotonic()
-        # Two late pongs in a row are needed: one late pong can be a single
-        # TCP retransmission on a lossy link, not a slow reader.
-        self.late_pongs = self.late_pongs + 1 if latency > SLOW_PONG_SECONDS else 0
-        if self.late_pongs >= SLOW_LATE_PONGS:
+        # Slow means late pongs prove the client went SLOW_LATE_SECONDS
+        # without reading. A pong with latency L shows the client stopped
+        # reading at least L seconds before it arrived, so a streak starts at
+        # now - L and is measured only up to the latest late pong: time that
+        # passes after it proves nothing, as fast pongs show reading again.
+        # A slow reader goes silent for about 5 s once its buffers fill, then
+        # answers late (often two pongs at once), so one pong is enough. A
+        # lossy link gives late pongs of 1 to 2 s that don't add up to 3 s.
+        # Fast pongs neither start nor end a streak; only
+        # SLOW_LATE_GAP_SECONDS with no late pong ends it.
+        if latency > SLOW_PONG_SECONDS:
+            if now - self.last_late > SLOW_LATE_GAP_SECONDS:
+                self.late_since = now - latency
+            else:
+                self.late_since = min(self.late_since, now - latency)
+            self.last_late = now
+        if (now - self.last_late <= SLOW_LATE_GAP_SECONDS
+                and self.last_late - self.late_since >= SLOW_LATE_SECONDS):
             if now >= self.slow_until:
                 self.slow_hold = min(self.slow_hold * 2, SLOW_HOLD_MAX_SECONDS)
                 self.slow_trips += 1
+                print(f"SLOW_MODE_ENTER client={self.label} "
+                      f"hold={self.slow_hold:.1f}s pong={latency * 1000:.0f}ms "
+                      f"late_for={self.last_late - self.late_since:.1f}s",
+                      flush=True)
             self.slow_until = now + self.slow_hold
         self.slow = now < self.slow_until
 
@@ -334,8 +371,10 @@ class ClientSender:
                 # No await between clearing the flag and taking the snapshot,
                 # so nothing can fall between the snapshot and new live work.
                 self.resync = False
+                # Server-initiated resync: send every retained final after the
+                # cursor, not only the client-requestable 60 s.
                 self.history, self.active = self.state.snapshot(
-                    self.cursor, HISTORY_SECONDS)
+                    self.cursor, HISTORY_RETAIN_SECONDS)
                 await self._send_snapshot()
                 continue
             if not self.pending:
@@ -397,9 +436,6 @@ class LiveRecallServer:
                     caption = state.accept(message)
                 except (ValueError, UnicodeError, TypeError):
                     continue
-                except OverflowError:
-                    await ws.close(code=1013, reason="Active segment capacity exceeded")
-                    break
                 if caption is None:
                     continue
                 for client in tuple(self.clients):
@@ -410,6 +446,8 @@ class LiveRecallServer:
                     await asyncio.sleep(0)
         finally:
             self.source = None
+            if state.evicted:
+                print(f"ACTIVE_EVICTED segments={state.evicted}", flush=True)
             print("Source disconnected; session history retained", flush=True)
 
     async def handle_client(self, ws: Any, state: SessionState,
@@ -434,6 +472,11 @@ class LiveRecallServer:
                 task.result()
         finally:
             self.clients.discard(client)
+            if client.coalesced or client.slow_trips or client.resyncs:
+                print(f"CLIENT_STATS client={client.label} "
+                      f"coalesced={client.coalesced} "
+                      f"slow_trips={client.slow_trips} "
+                      f"resyncs={client.resyncs}", flush=True)
             client.closing = True
             client.ready.set()
             # Close first to unblock any in-flight send, then clean up tasks.

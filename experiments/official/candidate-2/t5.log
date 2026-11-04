@@ -1,0 +1,215 @@
+LiveRecall listening on ws://0.0.0.0:8765
+Starting 100 clients; slow=0, disconnecting=0, late=0
+opening handshake failed
+Traceback (most recent call last):
+  File "/home/pranav/lr-candidate-2/venv/lib/python3.12/site-packages/websockets/http11.py", line 138, in parse
+    request_line = yield from parse_line(read_line)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pranav/lr-candidate-2/venv/lib/python3.12/site-packages/websockets/http11.py", line 320, in parse_line
+    line = yield from read_line(MAX_LINE_LENGTH)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pranav/lr-candidate-2/venv/lib/python3.12/site-packages/websockets/streams.py", line 46, in read_line
+    raise EOFError(f"stream ends after {p} bytes, before end of line")
+EOFError: stream ends after 0 bytes, before end of line
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/pranav/lr-candidate-2/venv/lib/python3.12/site-packages/websockets/server.py", line 547, in parse
+    request = yield from Request.parse(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pranav/lr-candidate-2/venv/lib/python3.12/site-packages/websockets/http11.py", line 140, in parse
+    raise EOFError("connection closed while reading HTTP request line") from exc
+EOFError: connection closed while reading HTTP request line
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/pranav/lr-candidate-2/venv/lib/python3.12/site-packages/websockets/asyncio/server.py", line 356, in conn_handler
+    await connection.handshake(
+  File "/home/pranav/lr-candidate-2/venv/lib/python3.12/site-packages/websockets/asyncio/server.py", line 207, in handshake
+    raise self.protocol.handshake_exc
+websockets.exceptions.InvalidMessage: did not receive a valid HTTP request
+Source connected: L1
+SOURCE_DONE: emitted 49 finalized segments
+Source disconnected; session history retained
+CLIENT_STATS client=127.0.0.1:54758 coalesced=1 slow_trips=0 resyncs=0
+CLIENT_STATS client=127.0.0.1:55090 coalesced=1 slow_trips=0 resyncs=0
+CLIENT_STATS client=127.0.0.1:54658 coalesced=1 slow_trips=0 resyncs=0
+CLIENT_STATS client=127.0.0.1:55426 coalesced=1 slow_trips=0 resyncs=0
+CLIENT_STATS client=127.0.0.1:55056 coalesced=2 slow_trips=0 resyncs=0
+CLIENT_STATS client=127.0.0.1:54828 coalesced=3 slow_trips=0 resyncs=0
+Results written to /home/pranav/lr-candidate-2/official/candidate-2/t5_run01.csv
+LiveRecall listening on ws://0.0.0.0:8765
+Starting 100 clients; slow=0, disconnecting=0, late=0
+opening handshake failed
+Traceback (most recent call last):
+  File "/home/pranav/lr-candidate-2/venv/lib/python3.12/site-packages/websockets/http11.py", line 138, in parse
+    request_line = yield from parse_line(read_line)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pranav/lr-candidate-2/venv/lib/python3.12/site-packages/websockets/http11.py", line 320, in parse_line
+    line = yield from read_line(MAX_LINE_LENGTH)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pranav/lr-candidate-2/venv/lib/python3.12/site-packages/websockets/streams.py", line 46, in read_line
+    raise EOFError(f"stream ends after {p} bytes, before end of line")
+EOFError: stream ends after 0 bytes, before end of line
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/pranav/lr-candidate-2/venv/lib/python3.12/site-packages/websockets/server.py", line 547, in parse
+    request = yield from Request.parse(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pranav/lr-candidate-2/venv/lib/python3.12/site-packages/websockets/http11.py", line 140, in parse
+    raise EOFError("connection closed while reading HTTP request line") from exc
+EOFError: connection closed while reading HTTP request line
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/pranav/lr-candidate-2/venv/lib/python3.12/site-packages/websockets/asyncio/server.py", line 356, in conn_handler
+    await connection.handshake(
+  File "/home/pranav/lr-candidate-2/venv/lib/python3.12/site-packages/websockets/asyncio/server.py", line 207, in handshake
+    raise self.protocol.handshake_exc
+websockets.exceptions.InvalidMessage: did not receive a valid HTTP request
+Source connected: L1
+SOURCE_DONE: emitted 49 finalized segments
+Source disconnected; session history retained
+CLIENT_STATS client=127.0.0.1:34278 coalesced=2 slow_trips=0 resyncs=0
+CLIENT_STATS client=127.0.0.1:34964 coalesced=1 slow_trips=0 resyncs=0
+CLIENT_STATS client=127.0.0.1:34548 coalesced=2 slow_trips=0 resyncs=0
+CLIENT_STATS client=127.0.0.1:34376 coalesced=2 slow_trips=0 resyncs=0
+CLIENT_STATS client=127.0.0.1:34392 coalesced=1 slow_trips=0 resyncs=0
+CLIENT_STATS client=127.0.0.1:34750 coalesced=2 slow_trips=0 resyncs=0
+CLIENT_STATS client=127.0.0.1:34806 coalesced=2 slow_trips=0 resyncs=0
+CLIENT_STATS client=127.0.0.1:35118 coalesced=2 slow_trips=0 resyncs=0
+CLIENT_STATS client=127.0.0.1:34824 coalesced=2 slow_trips=0 resyncs=0
+CLIENT_STATS client=127.0.0.1:34962 coalesced=4 slow_trips=0 resyncs=0
+CLIENT_STATS client=127.0.0.1:34872 coalesced=2 slow_trips=0 resyncs=0
+CLIENT_STATS client=127.0.0.1:34606 coalesced=3 slow_trips=0 resyncs=0
+CLIENT_STATS client=127.0.0.1:34624 coalesced=1 slow_trips=0 resyncs=0
+Results written to /home/pranav/lr-candidate-2/official/candidate-2/t5_run02.csv
+LiveRecall listening on ws://0.0.0.0:8765
+Starting 100 clients; slow=0, disconnecting=0, late=0
+opening handshake failed
+Traceback (most recent call last):
+  File "/home/pranav/lr-candidate-2/venv/lib/python3.12/site-packages/websockets/http11.py", line 138, in parse
+    request_line = yield from parse_line(read_line)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pranav/lr-candidate-2/venv/lib/python3.12/site-packages/websockets/http11.py", line 320, in parse_line
+    line = yield from read_line(MAX_LINE_LENGTH)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pranav/lr-candidate-2/venv/lib/python3.12/site-packages/websockets/streams.py", line 46, in read_line
+    raise EOFError(f"stream ends after {p} bytes, before end of line")
+EOFError: stream ends after 0 bytes, before end of line
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/pranav/lr-candidate-2/venv/lib/python3.12/site-packages/websockets/server.py", line 547, in parse
+    request = yield from Request.parse(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pranav/lr-candidate-2/venv/lib/python3.12/site-packages/websockets/http11.py", line 140, in parse
+    raise EOFError("connection closed while reading HTTP request line") from exc
+EOFError: connection closed while reading HTTP request line
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/pranav/lr-candidate-2/venv/lib/python3.12/site-packages/websockets/asyncio/server.py", line 356, in conn_handler
+    await connection.handshake(
+  File "/home/pranav/lr-candidate-2/venv/lib/python3.12/site-packages/websockets/asyncio/server.py", line 207, in handshake
+    raise self.protocol.handshake_exc
+websockets.exceptions.InvalidMessage: did not receive a valid HTTP request
+Source connected: L1
+SOURCE_DONE: emitted 49 finalized segments
+Source disconnected; session history retained
+CLIENT_STATS client=127.0.0.1:52840 coalesced=4 slow_trips=0 resyncs=0
+CLIENT_STATS client=127.0.0.1:52856 coalesced=1 slow_trips=0 resyncs=0
+CLIENT_STATS client=127.0.0.1:52762 coalesced=1 slow_trips=0 resyncs=0
+CLIENT_STATS client=127.0.0.1:53118 coalesced=2 slow_trips=0 resyncs=0
+CLIENT_STATS client=127.0.0.1:53238 coalesced=4 slow_trips=0 resyncs=0
+CLIENT_STATS client=127.0.0.1:52776 coalesced=1 slow_trips=0 resyncs=0
+CLIENT_STATS client=127.0.0.1:52662 coalesced=1 slow_trips=0 resyncs=0
+Results written to /home/pranav/lr-candidate-2/official/candidate-2/t5_run03.csv
+
+=== Run 1/3 ===
+Clients=100, duration=40.0s, source segments=49
+LiveRecall Results
+==================
+Clients observed:              100
+Live caption messages:         14672
+Recovered history items:       6
+Accepted messages:             14672
+Recovered messages:            6
+Duplicate messages observed:   0
+Stale messages observed:       0
+P50 caption age:               262.22 ms
+P95 caption age:               690.43 ms
+P99 caption age:               1029.82 ms
+Fresh Caption Ratio (<=500 ms): 88.17%
+Fresh Final Caption Ratio (<=500 ms): 87.35%
+Successful connections:        100
+Connection errors:             0
+Unique final captions:         4900/4900
+Final-caption completeness:    100.00%
+Unique live revisions:         14672/14700
+Normal Update Coverage:        99.81%
+
+=== Run 2/3 ===
+Clients=100, duration=40.0s, source segments=49
+LiveRecall Results
+==================
+Clients observed:              100
+Live caption messages:         14674
+Recovered history items:       0
+Accepted messages:             14674
+Recovered messages:            0
+Duplicate messages observed:   0
+Stale messages observed:       0
+P50 caption age:               262.60 ms
+P95 caption age:               824.26 ms
+P99 caption age:               1292.59 ms
+Fresh Caption Ratio (<=500 ms): 87.62%
+Fresh Final Caption Ratio (<=500 ms): 85.90%
+Successful connections:        100
+Connection errors:             0
+Unique final captions:         4900/4900
+Final-caption completeness:    100.00%
+Unique live revisions:         14674/14700
+Normal Update Coverage:        99.82%
+
+=== Run 3/3 ===
+Clients=100, duration=40.0s, source segments=49
+LiveRecall Results
+==================
+Clients observed:              100
+Live caption messages:         14686
+Recovered history items:       0
+Accepted messages:             14686
+Recovered messages:            0
+Duplicate messages observed:   0
+Stale messages observed:       0
+P50 caption age:               274.34 ms
+P95 caption age:               704.96 ms
+P99 caption age:               853.03 ms
+Fresh Caption Ratio (<=500 ms): 85.95%
+Fresh Final Caption Ratio (<=500 ms): 83.10%
+Successful connections:        100
+Connection errors:             0
+Unique final captions:         4900/4900
+Final-caption completeness:    100.00%
+Unique live revisions:         14686/14700
+Normal Update Coverage:        99.90%
+
+=== Median across independent runs ===
+P50 caption age                   262.60 ms
+P95 caption age                   704.96 ms
+P99 caption age                  1029.82 ms
+Fresh Caption Ratio                87.62 %
+Fresh Final Caption Ratio          85.90 %
+Final completeness                100.00 %
+Normal Update Coverage             99.82 %
+Normal-client P95                 704.96 ms
+
+Public run complete. CSV and JSON result files were written beside run_demo.py.
