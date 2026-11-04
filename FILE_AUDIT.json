@@ -420,6 +420,118 @@
       "state": "active",
       "submission": "include",
       "purpose": "Server and harness output of one official test on the UTM VM (3 runs)."
+    },
+    {
+      "path": "experiments/official/candidate-2/SUMMARY.txt",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Official run summary for the final tag on the UTM VM."
+    },
+    {
+      "path": "experiments/official/candidate-2/commands.txt",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Exact commands of the candidate-2 official runs."
+    },
+    {
+      "path": "experiments/official/candidate-2/csv_and_json.tar.gz",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Raw per-run CSV/JSON of the candidate-2 official runs."
+    },
+    {
+      "path": "experiments/official/candidate-2/environment.txt",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "UTM VM environment of the candidate-2 official runs."
+    },
+    {
+      "path": "experiments/official/candidate-2/unit_tests.txt",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Unit test output on the UTM VM before the candidate-2 runs."
+    },
+    {
+      "path": "experiments/official/candidate-2/t1.log",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Server and harness output of one candidate-2 official test on the UTM VM (3 runs)."
+    },
+    {
+      "path": "experiments/official/candidate-2/t1_supp.log",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Server and harness output of one candidate-2 official test on the UTM VM (3 runs)."
+    },
+    {
+      "path": "experiments/official/candidate-2/t2.log",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Server and harness output of one candidate-2 official test on the UTM VM (3 runs)."
+    },
+    {
+      "path": "experiments/official/candidate-2/t2_supp.log",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Server and harness output of one candidate-2 official test on the UTM VM (3 runs)."
+    },
+    {
+      "path": "experiments/official/candidate-2/t3.log",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Server and harness output of one candidate-2 official test on the UTM VM (3 runs)."
+    },
+    {
+      "path": "experiments/official/candidate-2/t3_supp.log",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Server and harness output of one candidate-2 official test on the UTM VM (3 runs)."
+    },
+    {
+      "path": "experiments/official/candidate-2/t4.log",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Server and harness output of one candidate-2 official test on the UTM VM (3 runs)."
+    },
+    {
+      "path": "experiments/official/candidate-2/t4_supp.log",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Server and harness output of one candidate-2 official test on the UTM VM (3 runs)."
+    },
+    {
+      "path": "experiments/official/candidate-2/t5.log",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Server and harness output of one candidate-2 official test on the UTM VM (3 runs)."
+    },
+    {
+      "path": "experiments/official/candidate-2/t5_bw_supp.log",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Server and harness output of one candidate-2 official test on the UTM VM (3 runs)."
+    },
+    {
+      "path": "experiments/official/candidate-2/t5_supp.log",
+      "change": "added",
+      "state": "active",
+      "submission": "include",
+      "purpose": "Server and harness output of one candidate-2 official test on the UTM VM (3 runs)."
     }
   ]
 }

@@ -98,7 +98,7 @@ sudo -v
 tmux new -d -s official "./tools/run_official.sh <label>"
 ```
 
-Results: `experiments/official/candidate-1-utm/` (UTM, used in the report) and `experiments/official/candidate-1/` (Multipass, cut off by slow timers).
+Results: `experiments/official/candidate-2/` (final code on UTM, used in the report), `experiments/official/candidate-1-utm/` (previous tag on UTM) and `experiments/official/candidate-1/` (Multipass, cut off by slow timers).
 
 Extra stress tools (these don't change any public file):
 
