@@ -26,7 +26,7 @@
 <body>
 
 <h1>LiveRecall: revision-aware caption delivery with bounded recovery</h1>
-<div class="meta">CS3103 Assignment 4 &middot; Pranav Mahatma (A0281778L) &middot; Final code: tag <code>candidate-2</code> &middot; Official numbers: Ubuntu VM (UTM), median of 3 runs</div>
+<div class="meta">CS3103 Assignment 4 &middot; Pranav Mahatma (A0281778L) &middot; Final code: tag <code>final-2</code> (server identical to <code>candidate-2</code>) &middot; Official numbers: Ubuntu VM (UTM), median of 3 runs</div>
 
 <h2>1. Architecture and protocol</h2>
 <p>The server (<code>solution_server.py</code>) is a single Python 3.12 process running one asyncio event loop, using <code>websockets</code> 16.1.1. One <b>source</b> connection sends <code>SOURCE_HELLO</code>, then <code>CAPTION_UPDATE</code>s, then <code>SOURCE_DONE</code>. Many <b>viewers</b> connect with <code>CLIENT_HELLO</code>, which carries a resume cursor <code>(last_segment, last_revision)</code> and <code>history_seconds</code>. I kept the required message format unchanged.</p>
@@ -171,7 +171,7 @@
   <li>Setup and exact commands: <code>README.md</code>. Official runs: <code>./tools/run_official.sh &lt;label&gt;</code>; UTM results in <code>experiments/official/candidate-2/</code> and <code>candidate-1-utm/</code>, Multipass results in <code>experiments/official/candidate-1/</code> (environment.txt, unit_tests.txt, SUMMARY.txt, per-test logs, csv_and_json.tar.gz).</li>
   <li>Starter baseline: <code>experiments/baseline/</code>. Server-core reconnect check: <code>experiments/server-core/</code>.</li>
   <li>Tests: 22 unit/integration tests (<code>python -m unittest discover tests</code>) and a headless-browser test with 2 tabs plus a late joiner (<code>tests/browser_e2e.js</code>).</li>
-  <li>Key commits: starter-baseline 80d08b8; server core 36ed410; browser client 30106e2; coalescing + ping window fbcb49f; slow-mode trigger bb50641 &rarr; 2c0f320 &rarr; d3142fa &rarr; 405da57; history cap 79c9720; tags candidate-1 and candidate-2 (active-segment eviction, 70 s local retention).</li>
+  <li>Key commits: starter-baseline 80d08b8; server core 36ed410; browser client 30106e2; coalescing + ping window fbcb49f; slow-mode trigger bb50641 &rarr; 2c0f320 &rarr; d3142fa &rarr; 405da57; history cap 79c9720; tags candidate-1, candidate-2 (active-segment eviction, 70 s local retention) and final-2 (client-only: recall windows corrected for source/browser clock difference, 43d9fe6; server unchanged, so official results stand).</li>
   <li>Server log lines: <code>SLOW_MODE_ENTER client=&hellip; hold=&hellip; pong=&hellip; late_for=&hellip;</code> and <code>CLIENT_STATS client=&hellip; coalesced=&hellip; slow_trips=&hellip; resyncs=&hellip;</code>.</li>
   <li>Design rationale per stage: <code>DESIGN_NOTES.md</code>. AI tool use and corrections: <code>AI_USAGE.md</code>.</li>
 </ul>
